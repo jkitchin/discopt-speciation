@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# uv / virtualenv
+.venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Jupyter Book build output
+_build/
+
+# MkDocs build output, and notebooks copied in by docs_hooks.py
+site/
+docs/examples/
+.cache/
+
+# OS
+.DS_Store
+
+# pytest
+.pytest_cache/

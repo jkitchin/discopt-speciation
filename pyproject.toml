@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "discopt-speciation"
+version = "0.2.0"
+description = "Chemical (aqueous/solid) equilibrium plugin for the discopt modeling language"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "John Kitchin", email = "jkitchin@andrew.cmu.edu" }]
+dependencies = [
+    "discopt>=0.8",
+    "numpy>=1.24",
+    "pydantic>=2",
+    "pyyaml>=6",
+    "scipy>=1.10",
+]
+
+[project.optional-dependencies]
+plot = ["matplotlib>=3.7"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    # for building/executing the example notebooks
+    "nbformat>=5",
+    "nbclient>=0.10",
+    "ipykernel>=6",
+    "matplotlib>=3.7",
+]
+# for building the documentation site (mkdocs build; see mkdocs.yml)
+docs = [
+    "mkdocs>=1.6,<2",  # MkDocs 2 drops the plugin system that Material and mkdocs-jupyter use
+    "mkdocs-material>=9.7",
+    "mkdocs-jupyter>=0.26",
+]
+
+[tool.pytest.ini_options]
+markers = ["slow: long-running solves (deselect with '-m \"not slow\"')"]
+
+# discopt.speciation is a PEP 420 namespace subpackage merged into ``discopt`` at
+# import time; only ``discopt.speciation`` is packaged so the base package is never
+# shadowed.
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["discopt.speciation*"]
+namespaces = true
+
+[tool.setuptools.package-data]
+"discopt.speciation" = ["data/*.dat", "data/README.md", "skill/SKILL.md", "skill/agents/*.md", "skill/examples/*.py"]
+
+[project.scripts]
+discopt-speciation-install-skill = "discopt.speciation.install:main"

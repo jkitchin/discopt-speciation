@@ -1,0 +1,79 @@
+site_name: discopt-speciation
+site_description: Chemical equilibrium in aqueous systems with solids, gases, solid solutions and surfaces, on top of discopt
+site_author: John Kitchin
+site_url: https://kitchingroup.cheme.cmu.edu/discopt-speciation/
+repo_url: https://github.com/jkitchin/discopt-speciation
+repo_name: jkitchin/discopt-speciation
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - search.highlight
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+nav:
+  - Home: index.md
+  - Guides:
+      - Concepts: concepts.md
+      - Databases: databases.md
+      - Your own data: custom-data.md
+      - Activity models: activity-models.md
+      - Stability: stability.md
+      - Fitting: fitting.md
+      - Optimization: optimization.md
+      - Diagrams: diagrams.md
+      - Claude Code skill: agent-skill.md
+  - Examples:
+      - Overview: examples.md
+      - Getting started: examples/01-getting-started.ipynb
+      - Validation: examples/02-validation.ipynb
+      - Databases and your own data: examples/03-databases-and-your-own-data.ipynb
+      - Fitting thermodynamic data: examples/04-fitting-thermodynamic-data.ipynb
+      - Diagrams: examples/05-diagrams.ipynb
+      - Rare earths and thorium: examples/06-rare-earths-and-thorium.ipynb
+  - Validation: validation.md
+  - References: references.md
+
+# examples/*.ipynb are copied into docs/examples/ at build time (see the hook)
+hooks:
+  - docs_hooks.py
+
+# the figure script lives beside the figures but is not part of the site
+exclude_docs: |
+  figures/*.py
+
+plugins:
+  - search
+  - mkdocs-jupyter:
+      execute: false          # notebooks are executed locally by examples/build_notebooks.py
+      include_source: true    # "download notebook" link on each page
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
