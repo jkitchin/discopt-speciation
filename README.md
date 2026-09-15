@@ -1,4 +1,6 @@
-# discopt-speciation
+<h1 align="center">
+  <img src="docs/assets/logo.png" alt="discopt-speciation" width="480">
+</h1>
 
 [![tests](https://github.com/jkitchin/discopt-speciation/actions/workflows/tests.yml/badge.svg)](https://github.com/jkitchin/discopt-speciation/actions/workflows/tests.yml)
 [![docs](https://github.com/jkitchin/discopt-speciation/actions/workflows/docs.yml/badge.svg)](https://github.com/jkitchin/discopt-speciation/actions/workflows/docs.yml)
