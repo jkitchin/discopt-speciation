@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>discopt-speciation web app</title>
+<meta name="description" content="Aqueous speciation, solubility, sweeps and Pourbaix diagrams in your browser, computed by discopt-speciation running in WebAssembly.">
+<link rel="icon" href="../assets/logo.png">
+<link rel="stylesheet" href="app.css">
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js" defer></script>
+<script src="app.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../">
+    <img src="../assets/logo.png" alt="">
+    <span>discopt-speciation <small>web app</small></span>
+  </a>
+  <div id="status" class="status loading" role="status" aria-live="polite">
+    <span class="dot"></span><span id="status-text">Starting…</span>
+  </div>
+  <nav class="links">
+    <a href="../web-app/">About</a>
+    <a href="../">Documentation</a>
+    <a href="https://github.com/jkitchin/discopt-speciation">GitHub</a>
+  </nav>
+</header>
+
+<main class="layout">
+  <aside class="setup">
+    <section class="panel">
+      <div class="row">
+        <label class="grow">Example
+          <select id="preset">
+            <option value="">— choose an example —</option>
+          </select>
+        </label>
+        <button id="share" class="ghost" title="Copy a link to this setup">Copy link</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Database</h2>
+      <div class="row">
+        <label class="grow">File <select id="database"></select></label>
+        <label class="grow">Activity model <select id="activity"></select></label>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Components <span class="hint">elements and valence states</span></h2>
+      <input id="element-filter" type="search" placeholder="Filter, e.g. Fe or C(4)" autocomplete="off">
+      <div id="elements" class="elements"><p class="muted">Loading…</p></div>
+      <div id="components" class="components"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Phases <span class="hint">minerals and gases that can form</span></h2>
+      <input id="phase-filter" type="search" placeholder="Filter phases" autocomplete="off">
+      <div id="phases" class="phases"><p class="muted">Choose components first.</p></div>
+    </section>
+
+    <section class="panel">
+      <h2>Conditions</h2>
+      <div class="grid2">
+        <label>Temperature (°C) <input id="T_C" type="number" step="any" value="25"></label>
+        <label>Method
+          <select id="method">
+            <option value="complementarity">complementarity</option>
+            <option value="enumerate">enumerate</option>
+            <option value="gibbs">Gibbs minimization</option>
+          </select>
+        </label>
+        <label>pH
+          <span class="pair"><select id="pHMode"><option value="free">free</option><option value="fixed">fixed</option></select>
+          <input id="pH" type="number" step="any" value="7"></span>
+        </label>
+        <label>pe
+          <span class="pair"><select id="peMode"><option value="free">free</option><option value="fixed">fixed</option></select>
+          <input id="pe" type="number" step="any" value="4"></span>
+        </label>
+        <label class="span2">Charge balance on
+          <select id="charge_balance"><option value="">none</option></select>
+        </label>
+      </div>
+      <div class="fixed-aq">
+        <div class="subhead"><span>Fixed log<sub>10</sub> activities</span> <button id="add-fixed" class="ghost small">+ add</button></div>
+        <div id="fixed-list"></div>
+      </div>
+    </section>
+
+    <button id="compute" class="primary" disabled>Compute equilibrium</button>
+  </aside>
+
+  <section class="results">
+    <div class="tabs" role="tablist">
+      <button role="tab" data-tab="speciation" class="active">Speciation</button>
+      <button role="tab" data-tab="sweep">Sweep</button>
+      <button role="tab" data-tab="diagram">Pourbaix / predominance</button>
+      <button role="tab" data-tab="logk">log K(T)</button>
+      <button role="tab" data-tab="python">Python</button>
+    </div>
+    <div id="alert" class="alert" hidden></div>
+
+    <div class="tab-panel" id="tab-speciation">
+      <div id="spec-empty" class="empty">
+        <h3>Equilibrium speciation</h3>
+        <p>Pick a database, the components and the phases that may form, then press
+          <b>Compute equilibrium</b>. Every phase you list ends up either present and saturated, or absent
+          and undersaturated.</p>
+        <p class="muted">The first calculation loads Python, numpy, scipy, discopt and the pounce solver
+          into the page (about 30 MB, cached afterwards). Nothing is sent to a server.</p>
+      </div>
+      <div id="spec-out" hidden>
+        <div id="cards" class="cards"></div>
+        <div class="split">
+          <div class="chart" id="chart-molality"></div>
+          <div class="chart" id="chart-si"></div>
+        </div>
+        <div class="split">
+          <div>
+            <div class="table-head">
+              <h3>Aqueous species</h3>
+              <label class="check"><input id="show-trace" type="checkbox"> include trace (&lt; 10<sup>-15</sup> m)</label>
+            </div>
+            <div class="table-wrap"><table id="species-table"></table></div>
+          </div>
+          <div>
+            <h3>Phases</h3>
+            <div class="table-wrap"><table id="phase-table"></table></div>
+            <div id="notes"></div>
+            <details><summary>Text summary</summary><pre id="summary"></pre></details>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-sweep" hidden>
+      <div class="controls">
+        <label>Vary <select id="sw-var"></select></label>
+        <label>from <input id="sw-from" type="number" step="any"></label>
+        <label>to <input id="sw-to" type="number" step="any"></label>
+        <label>points <input id="sw-n" type="number" min="2" max="401" value="41"></label>
+        <label class="check"><input id="sw-log" type="checkbox"> log spacing</label>
+        <label>species shown
+          <select id="sw-top"><option value="6">top 6</option><option value="10" selected>top 10</option><option value="20">top 20</option><option value="1000">all</option></select>
+        </label>
+        <button id="sw-run" class="primary" disabled>Run sweep</button>
+        <button id="sw-csv" class="ghost" disabled>CSV</button>
+      </div>
+      <div class="progress" id="sw-progress" hidden><div></div><span></span><button class="ghost small stop">Stop</button></div>
+      <div id="sw-empty" class="empty"><p>Sweep one variable and watch the speciation, the solids and the
+        saturation indices change. Each point starts from the previous solution.</p></div>
+      <div id="sw-out" hidden>
+        <div class="chart tall" id="chart-sw-species"></div>
+        <div class="split">
+          <div class="chart" id="chart-sw-solids"></div>
+          <div class="chart" id="chart-sw-si"></div>
+        </div>
+        <div class="chart" id="chart-sw-ph"></div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-diagram" hidden>
+      <div class="controls">
+        <label>Element <select id="dg-el"></select></label>
+        <label>x <select id="dg-x"></select></label>
+        <label>from <input id="dg-x0" type="number" step="any" value="1"></label>
+        <label>to <input id="dg-x1" type="number" step="any" value="13"></label>
+        <label>y <select id="dg-y"></select></label>
+        <label>from <input id="dg-y0" type="number" step="any" value="-12"></label>
+        <label>to <input id="dg-y1" type="number" step="any" value="20"></label>
+        <label>grid <select id="dg-n"><option>11</option><option>17</option><option selected>25</option><option>35</option><option>51</option></select></label>
+        <label class="check"><input id="dg-eh" type="checkbox"> Eh (V)</label>
+        <label class="check"><input id="dg-water" type="checkbox" checked> water lines</label>
+        <button id="dg-run" class="primary" disabled>Compute diagram</button>
+      </div>
+      <div class="progress" id="dg-progress" hidden><div></div><span></span><button class="ghost small stop">Stop</button></div>
+      <div id="dg-empty" class="empty">
+        <p>The species or solid holding the most of an element, at each point of a grid. With pH and pe
+          this is a Pourbaix diagram; the conditions on the left (amounts, temperature, other fixed
+          values) apply at every point. Try the <b>Iron in chloride solution</b> example.</p>
+        <p class="muted">A 25 × 25 grid is 625 equilibrium calculations, about 10–30 s in the browser.</p>
+      </div>
+      <div id="dg-out" hidden>
+        <div class="chart square" id="chart-diagram"></div>
+        <div id="dg-legend" class="legend"></div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-logk" hidden>
+      <div class="controls">
+        <label>T from (°C) <input id="lk-t0" type="number" step="any" value="0"></label>
+        <label>to <input id="lk-t1" type="number" step="any" value="100"></label>
+        <button id="lk-run" class="primary" disabled>Plot log K</button>
+      </div>
+      <p class="muted">Dissolution constants of the phases selected on the left, as written in the database.</p>
+      <div class="chart tall" id="chart-logk"></div>
+    </div>
+
+    <div class="tab-panel" id="tab-python" hidden>
+      <p>The same calculation with the Python package
+        (<code>pip install discopt-speciation</code>; see the <a href="../">documentation</a>):</p>
+      <div class="code-wrap"><button id="copy-code" class="ghost small">Copy</button><pre><code id="code"></code></pre></div>
+      <p class="muted" id="versions"></p>
+    </div>
+  </section>
+</main>
+</body>
+</html>

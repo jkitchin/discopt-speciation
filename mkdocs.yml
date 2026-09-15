@@ -27,6 +27,7 @@ theme:
 
 nav:
   - Home: index.md
+  - Web app: web-app.md
   - Guides:
       - Concepts: concepts.md
       - Databases: databases.md
@@ -55,12 +56,14 @@ hooks:
 # the figure script lives beside the figures but is not part of the site
 exclude_docs: |
   figures/*.py
+  __pycache__/
 
 plugins:
   - search
   - mkdocs-jupyter:
       execute: false          # notebooks are executed locally by examples/build_notebooks.py
       include_source: true    # "download notebook" link on each page
+      include: ["*.ipynb"]    # not *.py: docs/app/web_backend.py is served as a plain file
 
 markdown_extensions:
   - admonition

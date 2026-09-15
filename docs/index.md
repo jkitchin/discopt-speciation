@@ -37,6 +37,10 @@ Example notebooks are in [`examples/`](https://github.com/jkitchin/discopt-speci
 
 ## Quick start
 
+**No install:** try the [web app](app/index.html). It runs the package in your
+browser (WebAssembly), with speciation, sweeps, Pourbaix diagrams and log K(T).
+See [Web app](web-app.md).
+
 ```python
 from discopt.speciation import PhreeqcDatabase
 

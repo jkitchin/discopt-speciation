@@ -5,6 +5,7 @@
 [![tests](https://github.com/jkitchin/discopt-speciation/actions/workflows/tests.yml/badge.svg)](https://github.com/jkitchin/discopt-speciation/actions/workflows/tests.yml)
 [![docs](https://github.com/jkitchin/discopt-speciation/actions/workflows/docs.yml/badge.svg)](https://github.com/jkitchin/discopt-speciation/actions/workflows/docs.yml)
 [![documentation](https://img.shields.io/badge/documentation-online-blue)](https://kitchingroup.cheme.cmu.edu/discopt-speciation/)
+[![web app](https://img.shields.io/badge/web%20app-try%20in%20browser-orange)](https://kitchingroup.cheme.cmu.edu/discopt-speciation/app/)
 
 Chemical equilibrium for aqueous systems with solids, gases, solid solutions,
 ion exchangers and sorbing surfaces, as a discopt plugin (`import discopt.speciation`).
@@ -63,6 +64,10 @@ pip install -e ".[plot]"    # matplotlib, for diagrams
 ```
 
 ## Quick start
+
+**No install:** try the [web app](https://kitchingroup.cheme.cmu.edu/discopt-speciation/app/).
+It runs the package in your browser (WebAssembly, via Pyodide and pounce). It
+computes speciation, sweeps, Pourbaix diagrams and log K(T).
 
 ```python
 from discopt.speciation import PhreeqcDatabase
