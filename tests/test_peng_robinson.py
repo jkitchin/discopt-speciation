@@ -21,9 +21,9 @@ from discopt.speciation.eos import PengRobinson, pure_ln_phi
 DATA = pathlib.Path(__file__).parent / "data"
 REF = json.loads((DATA / "phreeqc_peng_robinson.json").read_text())
 LN10 = math.log(10.0)
-# PHREEQC's gas constant is 0.0820597 L atm/(mol K); the package's is R/101.325 = 0.0820574. At fixed P that moves
-# V_m by 3e-5 relative and phi by < 1e-7; at fixed V it moves P by 3e-5 relative and phi by < 4e-6.
-PHI_TOL = {"pressure": 1e-7, "fixed_si": 1e-7, "volume": 5e-6}
+# The equation of state uses PHREEQC's gas constant (0.0820597 L atm/(mol K)): V_m and P agree to ~1e-11, phi to
+# 4e-8 (fixed P, limited by PHREEQC's convergence of the gas composition) and 7e-9 (fixed V).
+PHI_TOL = {"pressure": 1e-7, "fixed_si": 1e-7, "volume": 3e-8}
 
 
 @pytest.fixture(scope="module")
@@ -48,11 +48,11 @@ def test_fugacity_coefficients_match_phreeqc(case, db_system):
     if case["kind"] == "pressure":
         P = case["P"]
         phi = np.exp(model.ln_phi(x, T, P))
-        assert abs(model.molar_volume(x, T, P) / case["Vm"] - 1.0) < 1e-4
+        assert abs(model.molar_volume(x, T, P) / case["Vm"] - 1.0) < 1e-9
     else:
         V = case["value"]
         P = model.pressure(NUM, n, V, T)
-        assert abs(P / case["P"] - 1.0) < 1e-4
+        assert abs(P / case["P"] - 1.0) < 1e-9
         phi = np.exp(model.ln_fugacity(NUM, n, V, T)) / (np.array(x) * P)
     for g, ph in zip(names, phi):
         assert abs(ph - gases[g]["phi"]) < PHI_TOL[case["kind"]], g
@@ -237,7 +237,7 @@ def test_sensitivity_through_peng_robinson_gas():
 
 
 def test_sensitivity_to_a_fixed_peng_robinson_pressure():
-    """d/d log10 P includes d log10 phi / d log10 P (not affine), and agrees with finite differences."""
+    """d/d log10 P includes d log10 phi / d log10 P and the pressure of log K, and agrees with finite differences."""
     db = PhreeqcDatabase.load("phreeqc.dat")
     s = db.system(["Ca", "C(4)"], phases=["Calcite", "CO2(g)"])
     amounts, lp = {"Calcite": 10.0}, 1.3
@@ -247,5 +247,9 @@ def test_sensitivity_to_a_fixed_peng_robinson_pressure():
     up, dn = (s.equilibrate(amounts, fixed={"CO2(g)": lp + c * h}) for c in (1, -1))
     assert S.get("pH", 0) == pytest.approx((up.pH - dn.pH) / (2 * h), rel=1e-6)
     dphi = (math.log10(up.fugacity_coefficient["CO2(g)"]) - math.log10(dn.fugacity_coefficient["CO2(g)"])) / (2 * h)
-    assert S.get("log10_activity:CO2", 0) == pytest.approx(1.0 + dphi, rel=1e-6)
     assert dphi < -0.02  # ~20 atm of CO2
+    # the fixed gas also sets the solution pressure (as PHREEQC), so CO2(g) = CO2 has a pressure-dependent log K
+    assert up.pressure == pytest.approx(10 ** (lp + h))
+    fd = (up.log10_activity["CO2"] - dn.log10_activity["CO2"]) / (2 * h)
+    assert S.get("log10_activity:CO2", 0) == pytest.approx(fd, rel=1e-6)
+    assert fd != pytest.approx(1.0 + dphi, rel=1e-3)

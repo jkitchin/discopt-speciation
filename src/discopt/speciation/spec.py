@@ -53,7 +53,8 @@ class SpeciesSpec(_Strict):
     charge: Optional[float] = None
     a0: Optional[float] = Field(default=None, description="ion size (Angstrom), Truesdell-Jones / B-dot")
     b: Optional[float] = Field(default=None, description="Truesdell-Jones b / neutral-species Setschenow coefficient")
-    params: dict[str, Union[float, str]] = Field(default_factory=dict, description="other activity-model parameters")
+    params: dict[str, Union[float, str, list[float]]] = Field(
+        default_factory=dict, description="other parameters: activity model; gas Tc, Pc, omega; Vm (PHREEQC -Vm)")
     site: Optional[str] = Field(default=None, description="exchange or surface site")
     nsites: Optional[float] = Field(default=None, description="exchange sites per formula (CaX2 -> 2)")
 
@@ -231,7 +232,7 @@ def system_from_spec(spec) -> "System":
         if sp.phase == "aqueous":
             s.aqueous(sp.name, sp.charge, a0=sp.a0, b=sp.b, **p)
         elif sp.phase == "solid":
-            s.solid(sp.name)
+            s.solid(sp.name).params.update(p)
         elif sp.phase == "gas":
             g = s.gas(sp.name)
             g.params.update(p)
@@ -286,8 +287,8 @@ def system_to_spec(system) -> dict:
             for k in ("a0", "b"):
                 if k in params:
                     d[k] = params.pop(k)
-        if params and sp.phase in ("aqueous", "gas"):
-            d["params"] = params
+        if params and sp.phase in ("aqueous", "gas", "solid", "solvent"):
+            d["params"] = {k: list(v) if isinstance(v, tuple) else v for k, v in params.items()}
         if sp.phase in ("exchange", "surface"):
             d["site"] = sp.site
         if sp.phase == "exchange":

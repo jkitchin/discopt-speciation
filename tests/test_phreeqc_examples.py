@@ -58,7 +58,12 @@ LA_FLOOR = 1e-30  # mol/kgw; species below this are numerical noise in both prog
 
 # pe is not defined in these reference solutions: no redox couple is present (O(0) = 0) and PHREEQC's pe comes from
 # its H(0) ~ 1e-14 m, which the package system does not contain.
-NO_PE = {"stress_T_llnl_0.01C", "stress_T_sit_0.01C", "stress_T_sit_100C"}
+NO_PE = {"stress_T_llnl_0.01C", "stress_T_sit_0.01C", "stress_T_sit_100C", "stress_P_llnl_25C_200atm",
+         "stress_P_sit_25C_200atm"}
+# llnl.dat: PHREEQC's default pe 4 leaves O(0) ~ 3e-14 m in the initial solution, while the package treats O2(aq) as a
+# redox carrier (database.py); it is a convention of the initial solution, not of the pressure, which llnl.dat (no
+# molar volumes) ignores in both programs.
+LA_SKIP = {"stress_P_llnl_25C_200atm": {"O2", "HClO", "ClO-"}}  # O2 and the Cl(+1) species formed with it
 
 # ---------------------------------------------------------------------------------------------------------------
 # Known package limitations / bugs, diagnosed in docs/validation.md. Keys: (case id, step label or "*").
@@ -68,9 +73,10 @@ LOG_FLOOR = ("log-molality lower bound LOG_LB=-200 (solve.py) pins a redox speci
 WATER_GFW = ("PHREEQC takes the water gfw from the database (phreeqc.dat/pitzer.dat: H 1.008, O 16.00 -> 18.016 g/mol) "
              "while the package uses 18.01528, so removing N mol of water leaves 7.6e-4 relative more water; the "
              "-mass-matched step with the same water mass agrees")
-LOGK_PRESSURE = ("the package has no pressure dependence of logK (PHREEQC's Vm / -analytical pressure terms); above "
-                 "100 C PHREEQC runs at P = Psat (15.3 atm at 200 C). Repro: Na/Cl 0.5, Ca 2e-3, C(4) 4e-3, S(6) 2e-3 "
-                 "m at 25 C, 200 atm: pH 4.3144 vs PHREEQC 4.2633 (identical at 1 atm)")
+PR_LOOP = ("PHREEQC caps a fixed-volume Peng-Robinson gas at the local pressure maximum of its liquid-vapor loop "
+           "(calc_PR, 'find the largest P' when V_m < 1.01 L/mol and P < 150 atm): at 25 C with 9-16 mol CO2 in 1 L it "
+           "reports P = 65.07-65.20 atm where the equation of state at its own gas amounts gives 60.96-64.22 atm. The "
+           "package solves the equation of state and does not model condensation")
 EX6_NONCONV = ("equilibrate with 4 aluminosilicate phases fails to converge (converged=False, complementarity residual "
                "~1) for small K-feldspar additions; repro: phreeqc.dat K/Al/Si, phases Gibbsite, Kaolinite, K-mica, "
                "K-feldspar, pure water + 2.658e-8 mol KAlSi3O8 -> pH 6.68 vs PHREEQC 7.0037 (Gibbsite at SI 0); "
@@ -98,8 +104,6 @@ XFAIL = {
     ("stress_pe_O2_limit", "*"): LOG_FLOOR,
     ("stress_pe_H2_limit", "*"): LOG_FLOOR,
     ("ex4", "4a"): WATER_GFW,
-    ("stress_T_phreeqc_200C", "*"): LOGK_PRESSURE,
-    ("stress_T_pitzer_200C", "*"): LOGK_PRESSURE,
     ("stress_trace_1e-30", "fixed-pH"): TRACE_NAN,
     ("stress_trace_1e-30", "reequilibrated"): TRACE_DROP,
     ("stress_surface_dense_lowI", "*"): SURFACE_START,
@@ -109,6 +113,8 @@ XFAIL = {
 for _lab in ("A1", "A5", "B-0.04umol", "B-0.08umol", "B-1umol", "B-4umol"):
     XFAIL[("ex6", _lab)] = EX6_NONCONV
 # at 36 mol removed the gfw difference is 0.026 g in 0.35 kg (7e-5 relative), inside the 1e-4 tolerance
+for _j in range(9, 17):
+    XFAIL[("ex22", f"25C-{_j}mol")] = PR_LOOP
 for _x in ("48", "54", "54.5", "54.876"):
     XFAIL[("stress_pitzer_evaporite", f"H2O-{_x}")] = WATER_GFW
 XFAIL[("stress_pitzer_evaporite", "H2O-55.026")] = (
@@ -121,7 +127,8 @@ for _x in ("54", "54.5", "54.876", "55.026"):
 # Steps slower than ~1 s (Pitzer temperature extremes 15-17 s, ex1 redox 16 s, the evaporite 4 s per step and 230 s
 # at 54.876, ...) run only with the slow set.
 SLOW_CASES = {"stress_pitzer_evaporite", "stress_T_pitzer_0.01C", "stress_T_pitzer_200C", "stress_T_sit_100C",
-              "stress_pe_O2_limit", "stress_pe_H2_limit", "ex5"}
+              "stress_pe_O2_limit", "stress_pe_H2_limit", "ex5", "stress_P_pitzer_25C_100atm",
+              "stress_P_pitzer_25C_500atm", "stress_P_pitzer_75C_300atm"}
 SLOW_STEPS = {("ex1", "reequilibrated-redox"), ("stress_trace_1e-30", "reequilibrated"),
               ("ex6", "A1"), ("ex6", "B-0.04umol"), ("ex6", "B-0.08umol"), ("ex6", "B-0.16umol")}
 
@@ -183,8 +190,9 @@ def deviations(case, step, r, ref, W0):
     d["water_rel"] = abs(W / ref["water"] - 1.0)
     if "H2O" in r.log10_activity:
         d["la_H2O"] = abs(r.log10_activity["H2O"] - ref["la_H2O"])
+    skip_la = LA_SKIP.get(case["id"], set())
     d["la"] = _worst((name, abs(r.log10_activity[name] - la)) for name, la in ref["la"].items()
-                     if name in r.log10_activity and ref["n"][name] / ref["water"] > LA_FLOOR)
+                     if name in r.log10_activity and ref["n"][name] / ref["water"] > LA_FLOOR and name not in skip_la)
     skip = set(step.get("skip_phases", ()))
     d["phase_mol"] = _worst((name, abs(r.solids[name] * W0 - n) / (PHASE_ABS + PHASE_REL * abs(n)))
                             for name, n in ref["equi"].items() if name in r.solids and name not in skip)

@@ -1137,6 +1137,73 @@ END
                  label="absorb")])
 
 
+# Pressure: log K from species molar volumes (-Vm), water density and dielectric constant at P, and (Pitzer) the
+# pressure-dependent Debye-Hueckel b. SOLUTION -pressure sets P; llnl.dat has no molar volumes, so its log K are
+# pressure independent in PHREEQC too.
+P_CASES = {"phreeqc.dat": ((25.0, (100.0, 200.0, 500.0)), (75.0, (300.0,))),
+           "pitzer.dat": ((25.0, (100.0, 500.0)), (75.0, (300.0,))),
+           "sit.dat": ((25.0, (200.0,)),),
+           "llnl.dat": ((25.0, (200.0,)),)}
+for dbname, groups in P_CASES.items():
+    tag = dbname.split(".")[0]
+    for tc, pressures in groups:
+        for patm in pressures:
+            case(f"stress_P_{tag}_{tc:g}C_{patm:g}atm", dbname, f"""
+SOLUTION 1
+    units mol/kgw
+    temp {tc}
+    pressure {patm}
+    pH 7 charge
+    Na 0.5
+    Cl 0.5
+    Ca 2e-3
+    C(4) 4e-3
+    S(6) 2e-3
+END
+USE solution 1
+EQUILIBRIUM_PHASES 1
+    Calcite 0 1
+    Gypsum 0 1
+END
+""", group="stress", si=["Calcite", "Gypsum", "Anhydrite"],
+                 title=f"{dbname} at {tc:g} C and {patm:g} atm: 0.5 m NaCl with calcite and gypsum",
+                 compared="pH, I, log activities, phase amounts (log K from molar volumes at P)",
+                 steps=[step((2, "react", 1, None), base=[((1, "i_soln", None, 1), 1.0)],
+                             add={"Calcite": 1.0, "Gypsum": 1.0},
+                             system=dict(components=["Na", "Cl", "Ca", "C(4)", "S(6)"], phases=["Calcite", "Gypsum"]),
+                             label="equilibrium")])
+
+# Example 22: CO2 solubility at high pressure, a fixed-volume (1 L) CO2 + H2O(g) gas phase with Peng-Robinson
+# gases and pressure-dependent log K. CO2 is added 1 mol at a time.
+EX22_T = {1: (25.0, 31), 2: (50.0, 29), 3: (75.0, 27), 4: (100.0, 28), 5: (150.0, 26)}
+EX22 = """
+SOLUTION 1
+GAS_PHASE 1
+    -fixed_volume
+    CO2(g) 0
+    H2O(g) 0
+REACTION
+ CO2 1; 0 31*1
+INCREMENTAL_REACTIONS true
+END
+""" + "".join(f"""USE solution 1
+USE gas_phase 1
+REACTION
+ CO2 1; 0 {n}*1
+REACTION_TEMPERATURE {sim}
+ {tc}
+END
+""" for sim, (tc, n) in list(EX22_T.items())[1:])
+case("ex22", "phreeqc.dat", EX22, si=["CO2(g)", "H2O(g)"], gases=["CO2(g)", "H2O(g)"],
+     title="CO2 solubility at high pressure: fixed-volume CO2 + H2O(g), 25-150 C",
+     compared="pH, dissolved C, gas moles, gas pressure, log activities",
+     note="USER_GRAPH blocks removed. The package is given PHREEQC's pressure (the gas pressure) for log K.",
+     steps=[step((sim, "react", j + 1, None), base=[((1, "i_soln", None, 1), 1.0)], add={"CO2": float(j)},
+                 system=dict(components=["C(4)"], gas_phase={"members": ["CO2(g)", "H2O(g)"], "volume": 1.0}),
+                 label=f"{tc:g}C-{j}mol")
+            for sim, (tc, n) in EX22_T.items() for j in range(1, n + 1)])
+
+
 # ============================================================================ run
 def main():
     # the IPhreeqc library bundled with phreeqpython 1.6.2 (its wrapper exposes no version call)

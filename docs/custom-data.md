@@ -48,6 +48,18 @@ $\log K(T, P)$ uses the first form that is present:
 | `logK`, `dH`, `dCp` | $\log K_r - \frac{\Delta H}{R\ln 10}(\frac1T-\frac1{T_r}) + \frac{\Delta C_p}{R\ln10}(\frac{T_r}{T}-1+\ln\frac{T}{T_r})$ |
 | `dV` | adds $-\Delta V (P - P_r)/(RT\ln 10)$ |
 
+**Molar volumes.** Above 1 atm, species molar volumes add the same term with
+$\Delta V_r = \sum_i \nu_{ri} V_i(T, P, I)$, as in PHREEQC (see
+[Concepts](concepts.md#pressure)). Give them as PHREEQC's `-Vm`:
+
+```python
+s.aqueous("Ca+2", Vm=[-0.3456, -7.252, 6.149, -2.479, 1.239, 5, 1.60, -57.1, -6.12e-3, 1])  # a1..a4 W b i1..i4
+s.solid("Calcite", Vm=36.9)                                                                 # cm3/mol
+```
+
+Water's molar volume ($18.016/\rho_w$) counts once any species has `Vm`.
+A reaction's own `dV` is added to the volume term.
+
 Tabulated data: fit `analytic` coefficients to your $\log K(T)$ table with
 `numpy.polyfit`-style least squares, or fit `logK` and `dH` directly with
 [fitting.md](fitting.md).
@@ -92,9 +104,14 @@ System("name", gas_eos="ideal")                       # the whole system, fixed 
 - **Defaults for `kij`.** Pairs not given use the database's
   `GAS_BINARY_PARAMETERS`, then PHREEQC's built-in values for H₂O(g) with CO₂,
   H₂S, CH₄ and N₂ ([Søreide and Whitson 1992](references.md#soreide1992)).
-- **Limits.** The gas is one vapor phase, on the largest root of the cubic.
-  Condensation (for example liquid CO₂ below 31 °C) is not modelled, and the
-  `gibbs` method and `optimize` do not support Peng–Robinson gases.
+- **Roots.** A fixed-pressure gas takes the largest (vapor) root of the cubic. A
+  fixed-volume gas is followed from the ideal gas, so it can become dense and
+  liquid-like (CO₂ above ~65 atm at 25 °C), as in PHREEQC; a root with negative
+  pressure is excluded.
+- **Limits.** Condensation into a separate liquid phase is not modelled. Inside
+  the liquid–vapor loop PHREEQC caps the pressure at the loop maximum and the
+  package does not ([validation](validation.md)). The `gibbs` method and
+  `optimize` do not support Peng–Robinson gases.
 
 ## 2. YAML / JSON specification
 

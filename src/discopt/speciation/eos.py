@@ -35,10 +35,10 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from discopt.speciation.water import R_GAS
 
-#: gas constant in L atm / (mol K)
-R_LATM = R_GAS / 101.325
+#: gas constant in L atm / (mol K): PHREEQC's R_LITER_ATM, part of its Peng-Robinson equation of state (CODATA's
+#: R / 101.325 = 0.0820574 is 3e-5 lower, which moves pressures above 1000 atm by 2e-4 relative)
+R_LATM = 0.0820597
 PR_A, PR_B = 0.457235, 0.077796
 SQ2 = math.sqrt(2.0)
 EOS = ("auto", "ideal", "peng-robinson")
@@ -190,6 +190,25 @@ class PengRobinson:
         Vm = self.molar_volume(x, T, P)
         lnf = self.ln_fugacity(NUM, [max(v, 1e-300) for v in x], Vm, T)
         return np.array([lf - math.log(max(v, 1e-300) * P) for lf, v in zip(lnf, x)])
+
+
+@dataclass
+class IdealBlend:
+    """``(1 - lam)`` ideal gas plus ``lam`` Peng-Robinson, in ``ln f`` and ``P``: a continuation path from the ideal gas."""
+
+    model: PengRobinson
+    lam: float
+
+    def coefficients(self, T: float):
+        return self.model.coefficients(T)
+
+    def ln_fugacity(self, o, n, V, T: float) -> list:
+        RT = R_LATM * T
+        pr = self.model.ln_fugacity(o, n, V, T)
+        return [(1.0 - self.lam) * o.log(ni * RT / V) + self.lam * f for ni, f in zip(n, pr)]
+
+    def pressure(self, o, n, V, T: float):
+        return (1.0 - self.lam) * o.sum(list(n)) * (R_LATM * T) / V + self.lam * self.model.pressure(o, n, V, T)
 
 
 def normalize_kij(kij) -> dict:

@@ -581,6 +581,11 @@ class Pitzer(ActivityModel):
     at least 2 (2.0 otherwise) and ``alpha2`` = 12. ``A_phi=None`` uses
     ``ln(10) A(T) / 3``.
 
+    Above 1 atm, as in PHREEQC, the Debye-Hueckel ``b`` of the ``F`` term is
+    lowered for ions with ``|z| = 1`` (by :math:`(7\\cdot10^{-5} + 1.93\\cdot10^{-9}(T-250)^2)P`)
+    and ``|z| = 2`` (by :math:`9.65\\cdot10^{-10}(T-263)^{2.773}P^{0.623}`), each by at
+    most 0.2 (``P`` in atm). The osmotic coefficient keeps ``b = 1.2``.
+
     ``macinnes=True`` (PHREEQC's default) rescales individual-ion activity
     coefficients so that ``gamma(Cl-)`` equals the mean activity coefficient of
     KCl at the solution's ionic strength: ``ln gamma_i -> ln gamma_i - z_i D``.
@@ -663,7 +668,13 @@ class Pitzer(ActivityModel):
             b0, b1, b2, c0 = (p.get(k, ("K+", "Cl-"), T) for k in ("B0", "B1", "B2", "C0"))
             if not all(v is None for v in (b0, b1, b2, c0)):
                 kcl = (names.index("Cl-"), b0 or 0.0, b1 or 0.0, b2 or 0.0, (c0 or 0.0) / 2.0)
-        ctx.data.update(ca=ca, like=like, psi=psi, lam=lam, zeta=zeta, Aphi=Aphi, kcl=kcl)
+        bz = None
+        patm = float(P) / 1.01325
+        if patm > 1.0:  # PHREEQC pitzer.cpp: pressure-dependent b for |z| = 1 and 2
+            pap1 = (7e-5 + 1.93e-9 * (T - 250.0) ** 2) * patm
+            pap2 = 9.65e-10 * max(T - 263.0, 0.0) ** 2.773 * patm**0.623
+            bz = {1: self.b - min(pap1, 0.2), 2: self.b - min(pap2, 0.2)}
+        ctx.data.update(ca=ca, like=like, psi=psi, lam=lam, zeta=zeta, Aphi=Aphi, kcl=kcl, bz=bz)
         return ctx
 
     # E-theta(I) and its I-derivative for charges zi, zj (same sign)
@@ -707,7 +718,12 @@ class Pitzer(ActivityModel):
         d, z = ctx.data, ctx.z
         s, Z, pairs, like = self._common(o, ctx, m, I)
         Aphi, b = d["Aphi"], self.b
-        fg = -Aphi * (s / (1.0 + b * s) + (2.0 / b) * o.log(1.0 + b * s))
+
+        def f_dh(bb):
+            return -Aphi * (s / (1.0 + bb * s) + (2.0 / bb) * o.log(1.0 + bb * s))
+
+        fg = f_dh(b)
+        fz = {k: f_dh(v) for k, v in d["bz"].items()} if d.get("bz") else {}
         F = o.sum([fg] + [m[c] * m[a] * Bp for c, a, B, Bp, C in pairs if not _is_zero(Bp)]
                   + [m[i] * m[j] * Php for i, j, Ph, Php in like if not _is_zero(Php)])
         CC = o.sum([m[c] * m[a] * C for c, a, B, Bp, C in pairs if C])
@@ -736,14 +752,15 @@ class Pitzer(ActivityModel):
         for i, zi in enumerate(z):
             terms = T[i]
             if zi:
-                terms = [(zi * zi) * F] + terms + ([abs(float(zi)) * CC] if not _is_zero(CC) else [])
+                Fi = F if abs(zi) not in fz else F - fg + fz[abs(zi)]
+                terms = [(zi * zi) * Fi] + terms + ([abs(float(zi)) * CC] if not _is_zero(CC) else [])
             out.append(o.sum(terms) if terms else 0.0)
         if d.get("kcl") is not None:
             icl, b0, b1, b2, C = d["kcl"]
             # mean ln gamma of pure KCl at molality I: f + I (2B + I B') + 3 I^2 C
             B = b0 + (b1 * _g(o, 2.0 * s) if b1 else 0.0) + (b2 * _g(o, 12.0 * s) if b2 else 0.0)
             Bp = ((b1 * _gp(o, 2.0 * s) if b1 else 0.0) + (b2 * _gp(o, 12.0 * s) if b2 else 0.0)) / I
-            ln_kcl = fg + I * (2.0 * B + I * Bp) + 3.0 * C * I * I
+            ln_kcl = fz.get(1, fg) + I * (2.0 * B + I * Bp) + 3.0 * C * I * I
             D = out[icl] - ln_kcl
             out = [v + float(zi) * D if zi else v for v, zi in zip(out, z)]
         return out

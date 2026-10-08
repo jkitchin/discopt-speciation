@@ -17,14 +17,17 @@ checked by [`tests/test_phreeqc.py`](https://github.com/jkitchin/discopt-speciat
 | Fe(II)/Fe(III) at pe 10 | phreeqc.dat | log a | ≤ 3e-6 |
 | Calcite + CO₂(g) at 10⁻³·⁵ atm | phreeqc.dat | pH, I, water mass | 1e-7, 1e-6, 1e-9 rel |
 | Na–CO₂ solution with a 1 L gas volume | phreeqc.dat, Peng–Robinson | pH, n(CO₂(g)) | 1.2e-6 rel, 1.4e-5 rel |
-| Pure CO₂ and CH₄, CO₂–CH₄–N₂–H₂O mixtures, 1–200 atm, 25–100 °C (39 states) | phreeqc.dat, Peng–Robinson | φ, molar volume, P | φ ≤ 4e-8 (fixed P), ≤ 3.5e-6 (fixed V); V_m, P ≤ 3e-5 rel |
+| Pure CO₂ and CH₄, CO₂–CH₄–N₂–H₂O mixtures, 1–200 atm, 25–100 °C (39 states) | phreeqc.dat, Peng–Robinson | φ, molar volume, P | φ ≤ 4e-8 (fixed P), ≤ 7e-9 (fixed V); V_m, P ≤ 1e-10 rel |
+| 0.5 m NaCl + Ca, C(4), S(6), calcite + gypsum at 100–500 atm, 25 and 75 °C | phreeqc.dat, molar volumes | pH, log a, phases | pH ≤ 4.8e-7, log a ≤ 2.6e-5 |
+| same, 100–500 atm | pitzer.dat | pH, log a, a_w | pH ≤ 2.4e-5, log a ≤ 7.5e-5, log a_w 5e-5 |
+| same, 200 atm | sit.dat / llnl.dat (llnl.dat has no molar volumes: pressure independent in both programs) | pH, log a | pH 5e-9 / 1.3e-7 |
 | [MINTEQ](references.md#allison1991) benchmark systems | ideal/Davies | full speciation | see [`test_minteq.py`](https://github.com/jkitchin/discopt-speciation/blob/main/tests/test_minteq.py) |
 | [Torres](references.md#laliwala2025) mass-action examples | ideal | solids, SI, invariance | see notebook 02 |
 
 **Remaining differences.**
-- **Gas cases:** the remaining 3e-5 relative difference in molar volume and
-  pressure is the gas constant: PHREEQC uses 0.0820597 L atm/(mol K), the package
-  $R/101.325 = 0.0820574$. The Peng–Robinson states are checked in
+- **Gas cases:** the Peng–Robinson equation of state uses PHREEQC's gas constant,
+  0.0820597 L atm/(mol K) (CODATA's $R/101.325 = 0.0820574$ is 3e-5 lower, which
+  shows above 1000 atm). The Peng–Robinson states are checked in
   [`tests/test_peng_robinson.py`](https://github.com/jkitchin/discopt-speciation/blob/main/tests/test_peng_robinson.py),
   against PHREEQC's own `PR_PHI`, `PR_P` and `GAS_VM`.
 - **Surface case:** the difference in ψ is at the level of physical constants
@@ -51,7 +54,7 @@ The validation notebook also shows:
 - **Reference data:** PHREEQC 3.8.7 (IPhreeqc 3.8.7-17149, through [phreeqpython](references.md#vitens) 1.6.2), run on the same database files.
 - **Stored with each case** ([`tests/data/phreeqc_examples.json`](https://github.com/jkitchin/discopt-speciation/blob/main/tests/data/phreeqc_examples.json), written by [`tests/data/generate_phreeqc_examples.py`](https://github.com/jkitchin/discopt-speciation/blob/main/tests/data/generate_phreeqc_examples.py)): the PHREEQC input, every selected-output row, and a step-by-step translation.
 - **How a step is posed:** the package receives PHREEQC's species moles, plus the same reactants. Element, charge and valence totals are therefore identical.
-- **Scale:** every step is one test, 227 steps in all.
+- **Scale:** every step is one test, 377 steps in all.
 
 **Tolerances.** The limits below are absolute unless marked *rel*.
 
@@ -89,6 +92,8 @@ The validation notebook also shows:
 | ex11 exchange, one mixing cell | exchange species, log a | NaX 3e-12 rel | pass |
 | ex14 brine (I 6.9) + carbonates, + As surface | pH, surface, ψ, phases | log a 1.9e-5, ψ 1.7e-5 rel | pass |
 | ex19 Langmuir Cd isotherm (6 steps) | sorbed Cd, Cd²⁺ | 3.7e-6 rel | pass |
+| ex22 CO₂ + H₂O(g) in 1 L, 1–31 mol CO₂, 25–150 °C, 13–1461 atm (133 steps) | pH, log a, SI, gas moles | pH 1.2e-6, log a 1.2e-6, SI 2.3e-6, gas 6.2e-6 rel | pass |
+| ex22 at 25 °C with 9–16 mol CO₂ (8 steps) | as above | pH 4e-3, gas 1.9e-2 rel | **xfail**: PHREEQC's pressure cap in the liquid–vapor loop |
 
 ### Stress cases
 
@@ -109,7 +114,8 @@ The validation notebook also shows:
 | calcite at SI 0 and ±1e-9 mol | presence, moles, SI | 1.5e-10 mol, SI 1.3e-6 | pass |
 | three phases dissolving completely | moles → 0, SI < 0 | log a 3.8e-6 | pass |
 | 0.5 m NaCl + calcite + gypsum at 0.01 °C (phreeqc, pitzer, llnl, sit) | phases, pH, log a | log a 1.5e-5, gypsum 2.4e-6 mol (pitzer), pH 1.8e-6 | pass (pitzer: slow, 19 s) |
-| same at 200 °C ([phreeqc.dat](https://github.com/jkitchin/discopt-speciation/blob/main/src/discopt/speciation/data/phreeqc.dat), pitzer.dat) | as above | pH 3e-3 / 4.8e-3, log a 0.015, gypsum 9.7e-4 mol | **xfail**: no pressure term in log K |
+| same at 200 °C ([phreeqc.dat](https://github.com/jkitchin/discopt-speciation/blob/main/src/discopt/speciation/data/phreeqc.dat), pitzer.dat), at the saturation pressure | as above | pH 3.6e-7 / 2.1e-6, log a 6.8e-5 / 1.4e-5 | pass (pitzer: slow) |
+| same at 100–500 atm (phreeqc, pitzer, sit, llnl) | as above | see the first table | pass (pitzer: slow, 1.5–5 min) |
 | same at 300 °C ([llnl.dat](https://github.com/jkitchin/discopt-speciation/blob/main/src/discopt/speciation/data/llnl.dat)), 100 °C ([sit.dat](https://github.com/jkitchin/discopt-speciation/blob/main/src/discopt/speciation/data/sit.dat)) | as above | log a 7.3e-8 / 1.1e-7, pH 3e-9 | pass (sit: slow, 9 s) |
 | Hfo with 100× ex8's sites at I 1e-4 | pH, surface, ψ | not converged | **xfail**: start-point failure |
 | Na exchanger vs Ca, Mg, Sr, Ba | exchange species | exchange 9e-13 rel, log a 5e-6 | pass |
@@ -127,8 +133,9 @@ Each item below is marked `xfail(strict=True)` in the tests. The repro inputs ar
 2. **Water gfw.** PHREEQC takes the gram-formula weight of water from the database, 18.016 in phreeqc.dat and [pitzer.dat](https://github.com/jkitchin/discopt-speciation/blob/main/src/discopt/speciation/data/pitzer.dat). The package uses 18.01528.
    - **Effect:** removing *N* mol of water leaves a different mass. For ex4 the water mass differs by 7.6e-4 rel. The equal-mass steps agree.
    - **Status:** a convention difference. It is documented here, not a bug.
-3. **No pressure dependence of log K.** For 0.5 m NaCl with Ca, C(4) and S(6) at 25 °C and 200 atm, the package gives pH 4.3144 and PHREEQC 4.2633. The two agree at 1 atm.
-   - **Above 100 °C:** PHREEQC works at the saturation pressure (15.3 atm at 200 °C), which gives pH deviations of 3–5e-3.
+3. **PHREEQC's pressure cap in the liquid–vapor loop.** For a fixed-volume Peng–Robinson gas with $V_m < 1.01$ L/mol and $P < 150$ atm inside the loop of the cubic, PHREEQC replaces the pressure by the loop's local maximum (`calc_PR`, "find the largest P").
+   - **Where it shows:** ex22 at 25 °C with 9–16 mol CO₂ in 1 L. PHREEQC reports 65.07–65.20 atm, while the equation of state at PHREEQC's own gas amounts gives 60.96–64.22 atm. The package solves the equation of state, so pH differs by up to 4e-3 and gas moles by 2 %.
+   - **Status:** a modelling choice for condensing CO₂, which the package does not represent as a separate phase.
 4. **ex6 non-convergence.** With the four K–Al–Si phases, small K-feldspar additions fail to converge. In a scan, 1e-8, 2e-8, 4e-8, 8e-8, 1e-6 and 4e-6 mol fail, and 1.6e-7 and 1e-5 mol converge.
    - **At 2.658e-8 mol:** pH 6.68 against PHREEQC's 7.0037, where Gibbsite should be at SI 0. The complementarity residual is about 1.
    - **Nearby points converge:** 1.6e-7 and 1e-5 mol both converge.
@@ -159,7 +166,6 @@ pe is not compared for [llnl.dat](https://github.com/jkitchin/discopt-speciation
 | ex11 (column), ex12, ex13, ex15, ex21 | 1-D advective / diffusive / dual-porosity transport, heat transport, multicomponent diffusion; only ex11's single mixing cell is compared |
 | ex16, ex17, ex18 | inverse modeling (`INVERSE_MODELING`); ex17's evaporation of Black Sea water is used forward as a Pitzer stress case |
 | ex20 | isotope distribution ([`iso.dat`](https://github.com/usgs-coupled/phreeqc3/blob/master/database/iso.dat), isotope ratios) |
-| ex22 | CO₂ and H₂S solubility at high pressure: needs pressure-dependent log K (item 3) |
 | ex10, non-ideal part | Guggenheim a₀/a₁ solid solution is not supported; the ideal solid solution is compared |
 | ex19, linear and Freundlich isotherms | 1e100 sites with log K −100.7/−102.6 and a non-integer (0.722) sorption stoichiometry are not representable |
 | ex1, redox couples in the initial solution | PHREEQC distributes Fe, Mn, U and N with separate couples; the package has one pe per solution (the re-equilibrated state is compared) |

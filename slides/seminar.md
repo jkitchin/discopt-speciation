@@ -177,7 +177,7 @@ PHREEQC ex10 aragonite–strontianite gap: both binodal compositions reproduced 
 - Truesdell-Jones, B-dot, LLNL B-dot
 - SIT, Pitzer (E-θ, MacInnes)
 
-**Temperature**: van 't Hoff with ΔH, ΔCp, ΔV, or PHREEQC analytic
+**T and P**: van 't Hoff or PHREEQC analytic; above 1 atm, species molar volumes
 
 </div>
 <div>
@@ -249,8 +249,7 @@ Also: strict YAML/JSON specs, and overrides on top of a database.
 ## Honest about the limits
 
 - **Log-molality floor** (−200): vanishing redox states can stall
-- **No pressure term in log K**: matters above ~10 atm (issue #2)
-- **Gas condensation**: one vapor phase, largest Peng–Robinson root
+- **Gas condensation**: not a separate phase (PHREEQC caps P in the loop)
 - **Water gfw**: 18.016 vs 18.01528, a convention
 
 <div class="takeaway">

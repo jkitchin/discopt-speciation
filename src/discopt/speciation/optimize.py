@@ -906,6 +906,9 @@ class _Problem:
         if not act.is_ideal or net.surfaces:
             raise NotImplementedError("method='global' needs an ideal activity model and no surface complexation "
                                       "(rigorous activity-coefficient enclosures are not implemented)")
+        if net.logK_I:
+            raise NotImplementedError("method='global' needs log K independent of the ionic strength; above 1 atm "
+                                      "the molar-volume terms make it depend on I")
         lb, ub = bounds
         la = {}
         msum = 0.0
