@@ -80,6 +80,16 @@ r = s.equilibrate({"Calcite": 1.0}, fixed={"CO2(g)": -3.5})
 print(r.present, round(r.pH, 3))        # ['Calcite'] 8.279
 ```
 
+Gases at high pressure (Peng–Robinson CO₂ and H₂O(g), log K at the gas
+pressure from species molar volumes; see [docs/gases-and-pressure.md](docs/gases-and-pressure.md)):
+
+```python
+s = db.system(["C(4)"], gas_phase={"members": ["CO2(g)", "H2O(g)"], "pressure": 100.0})
+r = s.equilibrate({"CO2(g)": 50.0}, T=323.15)
+print(r.pressure, round(r.molality["CO2"], 3), round(r.fugacity_coefficient["CO2(g)"], 3))
+# 100.0 1.041 0.614
+```
+
 Your own reactions:
 
 ```python
@@ -135,6 +145,7 @@ The documentation is published at
 | [docs/databases.md](docs/databases.md) | bundled PHREEQC databases |
 | [docs/custom-data.md](docs/custom-data.md) | your own species, constants, activity parameters, YAML, database files |
 | [docs/activity-models.md](docs/activity-models.md) | activity models and their parameters |
+| [docs/gases-and-pressure.md](docs/gases-and-pressure.md) | Peng–Robinson gases and pressure-dependent log K |
 | [docs/stability.md](docs/stability.md) | certified global phase stability |
 | [docs/fitting.md](docs/fitting.md) | parameter estimation with confidence intervals |
 | [docs/optimization.md](docs/optimization.md) | equilibrium-constrained design and worst-case bounds |

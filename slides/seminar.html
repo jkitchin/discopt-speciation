@@ -71,13 +71,14 @@ section.lead h1 { font-size: 46px; }
 .takeaway { background: #eef4fa; border-left: 6px solid #1f4e79; padding: 10px 18px; margin-top: 18px; }
 .cols { display: flex; gap: 40px; }
 .cols &gt; div { flex: 1; }
-;" data-marpit-pagination-total="23" data-size="16:9">
+;" data-marpit-pagination-total="24" data-size="16:9">
 <h2 id="outline">Outline</h2>
 <ol>
 <li>The problem: which phases are present?</li>
 <li>Formulation: complementarity, not least squares</li>
 <li>Solving it: homotopy, active sets, three methods</li>
 <li>Global stability certificates</li>
+<li>Gases and pressure: Peng–Robinson, log K(P)</li>
 <li>Validation against PHREEQC</li>
 <li>Beyond forward solves: sensitivities, fitting, design</li>
 <li>Using it: Python, YAML, web app, Claude skill</li>
@@ -111,7 +112,7 @@ section.lead h1 { font-size: 46px; }
 .takeaway { background: #eef4fa; border-left: 6px solid #1f4e79; padding: 10px 18px; margin-top: 18px; }
 .cols { display: flex; gap: 40px; }
 .cols &gt; div { flex: 1; }
-;" data-marpit-pagination-total="23" data-size="16:9">
+;" data-marpit-pagination-total="24" data-size="16:9">
 <h2 id="the-problem">The problem</h2>
 <p>Given water, dissolved elements, candidate minerals and gases:</p>
 <ul>
@@ -151,7 +152,7 @@ section.lead h1 { font-size: 46px; }
 .takeaway { background: #eef4fa; border-left: 6px solid #1f4e79; padding: 10px 18px; margin-top: 18px; }
 .cols { display: flex; gap: 40px; }
 .cols &gt; div { flex: 1; }
-;" data-marpit-pagination-total="23" data-size="16:9">
+;" data-marpit-pagination-total="24" data-size="16:9">
 <h2 id="the-equilibrium-conditions">The equilibrium conditions</h2>
 <table>
 <thead>
@@ -209,7 +210,7 @@ section.lead h1 { font-size: 46px; }
 .takeaway { background: #eef4fa; border-left: 6px solid #1f4e79; padding: 10px 18px; margin-top: 18px; }
 .cols { display: flex; gap: 40px; }
 .cols &gt; div { flex: 1; }
-;" data-marpit-pagination-total="23" data-size="16:9">
+;" data-marpit-pagination-total="24" data-size="16:9">
 <h2 id="why-complementarity">Why complementarity?</h2>
 <p>Common shortcuts: assume every candidate solid is present, or minimize <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>∑</mo><msup><mrow><mi mathvariant="normal">S</mi><mi mathvariant="normal">I</mi></mrow><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">\sum \mathrm{SI}^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.1373em;vertical-align:-0.25em;"></span><span class="mop op-symbol small-op" style="position:relative;top:0em;">∑</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord"><span class="mord mathrm">SI</span></span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8873em;"><span style="top:-3.1362em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span>.</p>
 <p>Their answers change when you:</p>
@@ -250,7 +251,7 @@ section.lead h1 { font-size: 46px; }
 .takeaway { background: #eef4fa; border-left: 6px solid #1f4e79; padding: 10px 18px; margin-top: 18px; }
 .cols { display: flex; gap: 40px; }
 .cols &gt; div { flex: 1; }
-;" data-marpit-pagination-total="23" data-size="16:9">
+;" data-marpit-pagination-total="24" data-size="16:9">
 <h2 id="invariance-demonstrated">Invariance, demonstrated</h2>
 <p>Counterexamples from Laliwala, Amusat and Torres (2025):</p>
 <table>
@@ -313,7 +314,7 @@ section.lead h1 { font-size: 46px; }
 .takeaway { background: #eef4fa; border-left: 6px solid #1f4e79; padding: 10px 18px; margin-top: 18px; }
 .cols { display: flex; gap: 40px; }
 .cols &gt; div { flex: 1; }
-;" data-marpit-pagination-total="23" data-size="16:9">
+;" data-marpit-pagination-total="24" data-size="16:9">
 <h2 id="solving-three-methods-one-answer">Solving: three methods, one answer</h2>
 <div class="cols">
 <div>
@@ -361,7 +362,7 @@ section.lead h1 { font-size: 46px; }
 .takeaway { background: #eef4fa; border-left: 6px solid #1f4e79; padding: 10px 18px; margin-top: 18px; }
 .cols { display: flex; gap: 40px; }
 .cols &gt; div { flex: 1; }
-;" data-marpit-pagination-total="23" data-size="16:9">
+;" data-marpit-pagination-total="24" data-size="16:9">
 <h2 id="when-local-is-not-enough">When local is not enough</h2>
 <p>A <strong>non-ideal solid solution</strong> makes <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>G</mi></mrow><annotation encoding="application/x-tex">G</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">G</span></span></span></span> non-convex.</p>
 <p>Inside a miscibility gap, one homogeneous solid satisfies every local condition, but two solids have lower <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>G</mi></mrow><annotation encoding="application/x-tex">G</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">G</span></span></span></span>.</p>
@@ -397,7 +398,7 @@ section.lead h1 { font-size: 46px; }
 .takeaway { background: #eef4fa; border-left: 6px solid #1f4e79; padding: 10px 18px; margin-top: 18px; }
 .cols { display: flex; gap: 40px; }
 .cols &gt; div { flex: 1; }
-;" data-marpit-pagination-total="23" data-size="16:9">
+;" data-marpit-pagination-total="24" data-size="16:9">
 <h2 id="a-stability-certificate">A stability certificate</h2>
 <ul>
 <li>Pure and ideal phases: exact, <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>min</mi><mo>⁡</mo><mi>D</mi><mo>=</mo><mi>ln</mi><mo>⁡</mo><mn>10</mn><mtext>  </mtext><mi>s</mi></mrow><annotation encoding="application/x-tex">\min D = \ln 10\; s</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mop">min</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">D</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mop">ln</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">10</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mord mathnormal">s</span></span></span></span></li>
@@ -437,7 +438,7 @@ section.lead h1 { font-size: 46px; }
 .takeaway { background: #eef4fa; border-left: 6px solid #1f4e79; padding: 10px 18px; margin-top: 18px; }
 .cols { display: flex; gap: 40px; }
 .cols &gt; div { flex: 1; }
-;" data-marpit-pagination-total="23" data-size="16:9">
+;" data-marpit-pagination-total="24" data-size="16:9">
 <h2 id="physics-included">Physics included</h2>
 <div class="cols">
 <div>
@@ -489,7 +490,7 @@ section.lead h1 { font-size: 46px; }
 .takeaway { background: #eef4fa; border-left: 6px solid #1f4e79; padding: 10px 18px; margin-top: 18px; }
 .cols { display: flex; gap: 40px; }
 .cols &gt; div { flex: 1; }
-;" data-marpit-pagination-total="23" data-size="16:9">
+;" data-marpit-pagination-total="24" data-size="16:9">
 <h2 id="quick-start">Quick start</h2>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-python"><span class="hljs-keyword">from</span> discopt.speciation <span class="hljs-keyword">import</span> PhreeqcDatabase
 
@@ -529,7 +530,7 @@ section.lead h1 { font-size: 46px; }
 .takeaway { background: #eef4fa; border-left: 6px solid #1f4e79; padding: 10px 18px; margin-top: 18px; }
 .cols { display: flex; gap: 40px; }
 .cols &gt; div { flex: 1; }
-;" data-marpit-pagination-total="23" data-size="16:9">
+;" data-marpit-pagination-total="24" data-size="16:9">
 <h2 id="or-declare-your-own-chemistry">Or declare your own chemistry</h2>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-python"><span class="hljs-keyword">from</span> discopt.speciation <span class="hljs-keyword">import</span> System
 
@@ -570,7 +571,51 @@ section.lead h1 { font-size: 46px; }
 .takeaway { background: #eef4fa; border-left: 6px solid #1f4e79; padding: 10px 18px; margin-top: 18px; }
 .cols { display: flex; gap: 40px; }
 .cols &gt; div { flex: 1; }
-;" data-marpit-pagination-total="23" data-size="16:9">
+;" data-marpit-pagination-total="24" data-size="16:9">
+<h2 id="gases-at-high-pressure">Gases at high pressure</h2>
+<div class="cols">
+<div>
+<p><img src="../docs/figures/co2_pressure.png" alt="" style="width:560px;" /></p>
+</div>
+<div>
+<ul>
+<li><strong>Peng–Robinson</strong> fugacities, PHREEQC's constants</li>
+<li><strong>log K(P)</strong> from species molar volumes</li>
+<li>Pressure from the gas phase, as PHREEQC</li>
+<li>Ideal gases overestimate CO₂ several-fold</li>
+</ul>
+</div>
+</div>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="14" data-paginate="true" data-theme="default" data-style="section {
+  font-size: 24px;
+  padding: 50px 70px;
+}
+h1 { font-size: 40px; color: #1f4e79; }
+h2 { font-size: 34px; color: #1f4e79; }
+code { font-size: 18px; }
+pre { font-size: 18px; }
+table { font-size: 20px; }
+section.lead h1 { font-size: 46px; }
+.small { font-size: 18px; color: #555; }
+.takeaway { background: #eef4fa; border-left: 6px solid #1f4e79; padding: 10px 18px; margin-top: 18px; }
+.cols { display: flex; gap: 40px; }
+.cols &gt; div { flex: 1; }
+" lang="en-US" data-marpit-pagination="14" style="--paginate:true;--theme:default;--style:section {
+  font-size: 24px;
+  padding: 50px 70px;
+}
+h1 { font-size: 40px; color: #1f4e79; }
+h2 { font-size: 34px; color: #1f4e79; }
+code { font-size: 18px; }
+pre { font-size: 18px; }
+table { font-size: 20px; }
+section.lead h1 { font-size: 46px; }
+.small { font-size: 18px; color: #555; }
+.takeaway { background: #eef4fa; border-left: 6px solid #1f4e79; padding: 10px 18px; margin-top: 18px; }
+.cols { display: flex; gap: 40px; }
+.cols &gt; div { flex: 1; }
+;" data-marpit-pagination-total="24" data-size="16:9">
 <h2 id="validation-against-phreeqc-3">Validation against PHREEQC 3</h2>
 <div style="font-size: 19px;">
 <table>
@@ -607,49 +652,20 @@ section.lead h1 { font-size: 46px; }
 <td>phreeqc.dat</td>
 <td>ψ ≤ 1.4e-4 rel</td>
 </tr>
+<tr>
+<td>Brine + calcite, gypsum, 100–500 atm</td>
+<td>phreeqc.dat / Pitzer</td>
+<td>pH ≤ 5e-7 / 2.4e-5</td>
+</tr>
+<tr>
+<td>CO₂ + H₂O(g) to 1461 atm (ex22)</td>
+<td>Peng–Robinson</td>
+<td>pH ≤ 1.2e-6</td>
+</tr>
 </tbody>
 </table>
 </div>
-<p>227 steps of the PHREEQC example problems, each a test. Known limits are <code>xfail(strict=True)</code> with a diagnosis.</p>
-</section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="14" data-paginate="true" data-theme="default" data-style="section {
-  font-size: 24px;
-  padding: 50px 70px;
-}
-h1 { font-size: 40px; color: #1f4e79; }
-h2 { font-size: 34px; color: #1f4e79; }
-code { font-size: 18px; }
-pre { font-size: 18px; }
-table { font-size: 20px; }
-section.lead h1 { font-size: 46px; }
-.small { font-size: 18px; color: #555; }
-.takeaway { background: #eef4fa; border-left: 6px solid #1f4e79; padding: 10px 18px; margin-top: 18px; }
-.cols { display: flex; gap: 40px; }
-.cols &gt; div { flex: 1; }
-" lang="en-US" data-marpit-pagination="14" style="--paginate:true;--theme:default;--style:section {
-  font-size: 24px;
-  padding: 50px 70px;
-}
-h1 { font-size: 40px; color: #1f4e79; }
-h2 { font-size: 34px; color: #1f4e79; }
-code { font-size: 18px; }
-pre { font-size: 18px; }
-table { font-size: 20px; }
-section.lead h1 { font-size: 46px; }
-.small { font-size: 18px; color: #555; }
-.takeaway { background: #eef4fa; border-left: 6px solid #1f4e79; padding: 10px 18px; margin-top: 18px; }
-.cols { display: flex; gap: 40px; }
-.cols &gt; div { flex: 1; }
-;" data-marpit-pagination-total="23" data-size="16:9">
-<h2 id="honest-about-the-limits">Honest about the limits</h2>
-<ul>
-<li><strong>Log-molality floor</strong> (−200): vanishing redox states can stall</li>
-<li><strong>Gas condensation</strong>: not a separate phase (PHREEQC caps P in the loop)</li>
-<li><strong>Water gfw</strong>: 18.016 vs 18.01528, a convention</li>
-</ul>
-<div class="takeaway">
-<p>Every result carries independent <code>residuals</code>. <code>converged</code> means all are below 1e-8.</p>
-</div>
+<p>377 steps of the PHREEQC example problems and stress cases, each a test. Known limits are <code>xfail(strict=True)</code> with a diagnosis.</p>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="15" data-paginate="true" data-theme="default" data-style="section {
   font-size: 24px;
@@ -679,19 +695,15 @@ section.lead h1 { font-size: 46px; }
 .takeaway { background: #eef4fa; border-left: 6px solid #1f4e79; padding: 10px 18px; margin-top: 18px; }
 .cols { display: flex; gap: 40px; }
 .cols &gt; div { flex: 1; }
-;" data-marpit-pagination-total="23" data-size="16:9">
-<h2 id="diagrams-from-full-equilibria">Diagrams from full equilibria</h2>
-<div class="cols">
-<div>
-<p><img src="../docs/figures/fe_pourbaix.png" alt="" style="width:470px;" /></p>
-</div>
-<div>
+;" data-marpit-pagination-total="24" data-size="16:9">
+<h2 id="honest-about-the-limits">Honest about the limits</h2>
 <ul>
-<li>Sweeps, predominance, Pourbaix, Ellingham</li>
-<li>Every point is a full equilibrium</li>
-<li>Phase boundaries emerge from complementarity, not hand drawing</li>
+<li><strong>Log-molality floor</strong> (−200): vanishing redox states can stall</li>
+<li><strong>Gas condensation</strong>: not a separate phase (PHREEQC caps P in the loop)</li>
+<li><strong>Water gfw</strong>: 18.016 vs 18.01528, a convention</li>
 </ul>
-</div>
+<div class="takeaway">
+<p>Every result carries independent <code>residuals</code>. <code>converged</code> means all are below 1e-8.</p>
 </div>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="16" data-paginate="true" data-theme="default" data-style="section {
@@ -722,10 +734,20 @@ section.lead h1 { font-size: 46px; }
 .takeaway { background: #eef4fa; border-left: 6px solid #1f4e79; padding: 10px 18px; margin-top: 18px; }
 .cols { display: flex; gap: 40px; }
 .cols &gt; div { flex: 1; }
-;" data-marpit-pagination-total="23" data-size="16:9">
-<h2 id="gypsum-to-anhydrite-for-free">Gypsum to anhydrite, for free</h2>
-<p><img src="../docs/figures/gypsum_anhydrite.png" alt="" style="width:1000px;" /></p>
-<p>The phase transition near 55 °C and the solubility kink come straight out of the T sweep.</p>
+;" data-marpit-pagination-total="24" data-size="16:9">
+<h2 id="diagrams-from-full-equilibria">Diagrams from full equilibria</h2>
+<div class="cols">
+<div>
+<p><img src="../docs/figures/fe_pourbaix.png" alt="" style="width:470px;" /></p>
+</div>
+<div>
+<ul>
+<li>Sweeps, predominance, Pourbaix, Ellingham</li>
+<li>Every point is a full equilibrium</li>
+<li>Phase boundaries emerge from complementarity, not hand drawing</li>
+</ul>
+</div>
+</div>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="17" data-paginate="true" data-theme="default" data-style="section {
   font-size: 24px;
@@ -755,15 +777,10 @@ section.lead h1 { font-size: 46px; }
 .takeaway { background: #eef4fa; border-left: 6px solid #1f4e79; padding: 10px 18px; margin-top: 18px; }
 .cols { display: flex; gap: 40px; }
 .cols &gt; div { flex: 1; }
-;" data-marpit-pagination-total="23" data-size="16:9">
-<h2 id="exact-sensitivities">Exact sensitivities</h2>
-<p>At a converged state the assemblage equations are square: <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>F</mi><mo stretchy="false">(</mo><mi>x</mi><mo separator="true">,</mo><mi>θ</mi><mo stretchy="false">)</mo><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">F(x,\theta)=0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.1389em;">F</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">θ</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">0</span></span></span></span>.</p>
-<p><span is="marp-span" data-auto-scaling="downscale-only" class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mfrac><mrow><mi>d</mi><mi>x</mi></mrow><mrow><mi>d</mi><mi>θ</mi></mrow></mfrac><mo>=</mo><mo>−</mo><msubsup><mi>F</mi><mi>x</mi><mrow><mo>−</mo><mn>1</mn></mrow></msubsup><msub><mi>F</mi><mi>θ</mi></msub></mrow><annotation encoding="application/x-tex">\frac{dx}{d\theta} = -F_x^{-1}F_\theta
-</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:2.0574em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3714em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal">d</span><span class="mord mathnormal" style="margin-right:0.0278em;">θ</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal">d</span><span class="mord mathnormal">x</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.1111em;vertical-align:-0.247em;"></span><span class="mord">−</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">F</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8641em;"><span style="top:-2.453em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">x</span></span></span><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.247em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">F</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0278em;">θ</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></span></p><ul>
-<li><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>F</mi><mi>x</mi></msub></mrow><annotation encoding="application/x-tex">F_x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">F</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">x</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> exact via JAX forward mode</li>
-<li>No extra solves</li>
-<li>Phases on a kink (<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>N</mi><mi>p</mi></msub><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">N_p = 0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.109em;">N</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.109em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">p</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">0</span></span></span></span>, <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mrow><mi mathvariant="normal">S</mi><mi mathvariant="normal">I</mi></mrow><mi>p</mi></msub><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\mathrm{SI}_p = 0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord"><span class="mord mathrm">SI</span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">p</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">0</span></span></span></span>): one-sided derivatives, reported as such</li>
-</ul>
+;" data-marpit-pagination-total="24" data-size="16:9">
+<h2 id="gypsum-to-anhydrite-for-free">Gypsum to anhydrite, for free</h2>
+<p><img src="../docs/figures/gypsum_anhydrite.png" alt="" style="width:1000px;" /></p>
+<p>The phase transition near 55 °C and the solubility kink come straight out of the T sweep.</p>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="18" data-paginate="true" data-theme="default" data-style="section {
   font-size: 24px;
@@ -793,15 +810,15 @@ section.lead h1 { font-size: 46px; }
 .takeaway { background: #eef4fa; border-left: 6px solid #1f4e79; padding: 10px 18px; margin-top: 18px; }
 .cols { display: flex; gap: 40px; }
 .cols &gt; div { flex: 1; }
-;" data-marpit-pagination-total="23" data-size="16:9">
-<h2 id="fitting-constants-to-data">Fitting constants to data</h2>
-<p>Calcite at 8 CO₂ pressures; measure pH and dissolved Ca (synthetic, noise added).</p>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-text">chi2 = 15.07, dof = 14, reduced chi2 = 1.077
-parameter            value    std err   95% CI
-logK Calcite       -8.4711    0.0095   [-8.4897, -8.4525]
-logK CaHCO3+        11.471      0.15   [11.178, 11.764]
-</code></pre>
-<p>True values −8.480 and 11.435: both inside the intervals. Profile likelihood available too.</p>
+;" data-marpit-pagination-total="24" data-size="16:9">
+<h2 id="exact-sensitivities">Exact sensitivities</h2>
+<p>At a converged state the assemblage equations are square: <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>F</mi><mo stretchy="false">(</mo><mi>x</mi><mo separator="true">,</mo><mi>θ</mi><mo stretchy="false">)</mo><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">F(x,\theta)=0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.1389em;">F</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">θ</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">0</span></span></span></span>.</p>
+<p><span is="marp-span" data-auto-scaling="downscale-only" class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mfrac><mrow><mi>d</mi><mi>x</mi></mrow><mrow><mi>d</mi><mi>θ</mi></mrow></mfrac><mo>=</mo><mo>−</mo><msubsup><mi>F</mi><mi>x</mi><mrow><mo>−</mo><mn>1</mn></mrow></msubsup><msub><mi>F</mi><mi>θ</mi></msub></mrow><annotation encoding="application/x-tex">\frac{dx}{d\theta} = -F_x^{-1}F_\theta
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:2.0574em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3714em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal">d</span><span class="mord mathnormal" style="margin-right:0.0278em;">θ</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal">d</span><span class="mord mathnormal">x</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.1111em;vertical-align:-0.247em;"></span><span class="mord">−</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">F</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8641em;"><span style="top:-2.453em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">x</span></span></span><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.247em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">F</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0278em;">θ</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></span></p><ul>
+<li><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>F</mi><mi>x</mi></msub></mrow><annotation encoding="application/x-tex">F_x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">F</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">x</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> exact via JAX forward mode</li>
+<li>No extra solves</li>
+<li>Phases on a kink (<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>N</mi><mi>p</mi></msub><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">N_p = 0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.109em;">N</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.109em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">p</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">0</span></span></span></span>, <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mrow><mi mathvariant="normal">S</mi><mi mathvariant="normal">I</mi></mrow><mi>p</mi></msub><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\mathrm{SI}_p = 0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord"><span class="mord mathrm">SI</span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">p</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">0</span></span></span></span>): one-sided derivatives, reported as such</li>
+</ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="19" data-paginate="true" data-theme="default" data-style="section {
   font-size: 24px;
@@ -831,16 +848,15 @@ section.lead h1 { font-size: 46px; }
 .takeaway { background: #eef4fa; border-left: 6px solid #1f4e79; padding: 10px 18px; margin-top: 18px; }
 .cols { display: flex; gap: 40px; }
 .cols &gt; div { flex: 1; }
-;" data-marpit-pagination-total="23" data-size="16:9">
-<h2 id="design-and-worst-case-bounds">Design and worst-case bounds</h2>
-<p>Equilibrium becomes a constraint inside a discopt model.</p>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-python">r = O.design(s, {<span class="hljs-string">&quot;Al&quot;</span>: <span class="hljs-number">1e-3</span>, <span class="hljs-string">&quot;Cl&quot;</span>: <span class="hljs-number">3e-3</span>}, {<span class="hljs-string">&quot;NaOH&quot;</span>: (<span class="hljs-number">0</span>, <span class="hljs-number">6e-3</span>)},
-             objective=<span class="hljs-string">&quot;NaOH&quot;</span>,
-             constraints=[(O.dissolved(<span class="hljs-string">&quot;Al&quot;</span>), <span class="hljs-string">&quot;&lt;=&quot;</span>, <span class="hljs-number">1e-6</span>)],
-             reagents={<span class="hljs-string">&quot;NaOH&quot;</span>: {<span class="hljs-string">&quot;Na&quot;</span>: <span class="hljs-number">1</span>, <span class="hljs-string">&quot;OH-&quot;</span>: <span class="hljs-number">1</span>}})
-<span class="hljs-comment"># (&#x27;local_optimum&#x27;, {&#x27;NaOH&#x27;: 0.0029818}, True)</span>
+;" data-marpit-pagination-total="24" data-size="16:9">
+<h2 id="fitting-constants-to-data">Fitting constants to data</h2>
+<p>Calcite at 8 CO₂ pressures; measure pH and dissolved Ca (synthetic, noise added).</p>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-text">chi2 = 15.07, dof = 14, reduced chi2 = 1.077
+parameter            value    std err   95% CI
+logK Calcite       -8.4711    0.0095   [-8.4897, -8.4525]
+logK CaHCO3+        11.471      0.15   [11.178, 11.764]
 </code></pre>
-<p><code>worst_case_bounds</code>: min/max of a quantity over a box of log K uncertainty, via spatial branch and bound. <strong>Certified</strong> only when every bound is rigorous.</p>
+<p>True values −8.480 and 11.435: both inside the intervals. Profile likelihood available too.</p>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="20" data-paginate="true" data-theme="default" data-style="section {
   font-size: 24px;
@@ -870,15 +886,16 @@ section.lead h1 { font-size: 46px; }
 .takeaway { background: #eef4fa; border-left: 6px solid #1f4e79; padding: 10px 18px; margin-top: 18px; }
 .cols { display: flex; gap: 40px; }
 .cols &gt; div { flex: 1; }
-;" data-marpit-pagination-total="23" data-size="16:9">
-<h2 id="try-it-in-the-browser">Try it in the browser</h2>
-<ul>
-<li>Pyodide + the <strong>pounce</strong> NLP solver in WebAssembly</li>
-<li>Same algorithm as the package, nothing on a server</li>
-<li>Speciation, sweeps, Pourbaix, log K(T), exported Python</li>
-<li>The URL holds the setup: share a link, share a calculation</li>
-</ul>
-<p><span class="small">kitchingroup.cheme.cmu.edu/discopt-speciation/app/</span></p>
+;" data-marpit-pagination-total="24" data-size="16:9">
+<h2 id="design-and-worst-case-bounds">Design and worst-case bounds</h2>
+<p>Equilibrium becomes a constraint inside a discopt model.</p>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-python">r = O.design(s, {<span class="hljs-string">&quot;Al&quot;</span>: <span class="hljs-number">1e-3</span>, <span class="hljs-string">&quot;Cl&quot;</span>: <span class="hljs-number">3e-3</span>}, {<span class="hljs-string">&quot;NaOH&quot;</span>: (<span class="hljs-number">0</span>, <span class="hljs-number">6e-3</span>)},
+             objective=<span class="hljs-string">&quot;NaOH&quot;</span>,
+             constraints=[(O.dissolved(<span class="hljs-string">&quot;Al&quot;</span>), <span class="hljs-string">&quot;&lt;=&quot;</span>, <span class="hljs-number">1e-6</span>)],
+             reagents={<span class="hljs-string">&quot;NaOH&quot;</span>: {<span class="hljs-string">&quot;Na&quot;</span>: <span class="hljs-number">1</span>, <span class="hljs-string">&quot;OH-&quot;</span>: <span class="hljs-number">1</span>}})
+<span class="hljs-comment"># (&#x27;local_optimum&#x27;, {&#x27;NaOH&#x27;: 0.0029818}, True)</span>
+</code></pre>
+<p><code>worst_case_bounds</code>: min/max of a quantity over a box of log K uncertainty, via spatial branch and bound. <strong>Certified</strong> only when every bound is rigorous.</p>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="21" data-paginate="true" data-theme="default" data-style="section {
   font-size: 24px;
@@ -908,16 +925,15 @@ section.lead h1 { font-size: 46px; }
 .takeaway { background: #eef4fa; border-left: 6px solid #1f4e79; padding: 10px 18px; margin-top: 18px; }
 .cols { display: flex; gap: 40px; }
 .cols &gt; div { flex: 1; }
-;" data-marpit-pagination-total="23" data-size="16:9">
-<h2 id="ask-in-plain-language">Ask in plain language</h2>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash">discopt-speciation-install-skill
-</code></pre>
+;" data-marpit-pagination-total="24" data-size="16:9">
+<h2 id="try-it-in-the-browser">Try it in the browser</h2>
 <ul>
-<li><code>/discopt-speciation</code> Claude Code skill</li>
-<li>Five tested example scripts to copy from</li>
-<li>A <code>speciation-expert</code> agent for difficult cases</li>
+<li>Pyodide + the <strong>pounce</strong> NLP solver in WebAssembly</li>
+<li>Same algorithm as the package, nothing on a server</li>
+<li>Speciation, sweeps, Pourbaix, log K(T), exported Python</li>
+<li>The URL holds the setup: share a link, share a calculation</li>
 </ul>
-<p>&quot;What dose of NaOH keeps dissolved Al below 1 µM?&quot;</p>
+<p><span class="small">kitchingroup.cheme.cmu.edu/discopt-speciation/app/</span></p>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="22" data-paginate="true" data-theme="default" data-style="section {
   font-size: 24px;
@@ -947,17 +963,57 @@ section.lead h1 { font-size: 46px; }
 .takeaway { background: #eef4fa; border-left: 6px solid #1f4e79; padding: 10px 18px; margin-top: 18px; }
 .cols { display: flex; gap: 40px; }
 .cols &gt; div { flex: 1; }
-;" data-marpit-pagination-total="23" data-size="16:9">
+;" data-marpit-pagination-total="24" data-size="16:9">
+<h2 id="ask-in-plain-language">Ask in plain language</h2>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-bash">discopt-speciation-install-skill
+</code></pre>
+<ul>
+<li><code>/discopt-speciation</code> Claude Code skill</li>
+<li>Five tested example scripts to copy from</li>
+<li>A <code>speciation-expert</code> agent for difficult cases</li>
+</ul>
+<p>&quot;What dose of NaOH keeps dissolved Al below 1 µM?&quot;</p>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="23" data-paginate="true" data-theme="default" data-style="section {
+  font-size: 24px;
+  padding: 50px 70px;
+}
+h1 { font-size: 40px; color: #1f4e79; }
+h2 { font-size: 34px; color: #1f4e79; }
+code { font-size: 18px; }
+pre { font-size: 18px; }
+table { font-size: 20px; }
+section.lead h1 { font-size: 46px; }
+.small { font-size: 18px; color: #555; }
+.takeaway { background: #eef4fa; border-left: 6px solid #1f4e79; padding: 10px 18px; margin-top: 18px; }
+.cols { display: flex; gap: 40px; }
+.cols &gt; div { flex: 1; }
+" lang="en-US" data-marpit-pagination="23" style="--paginate:true;--theme:default;--style:section {
+  font-size: 24px;
+  padding: 50px 70px;
+}
+h1 { font-size: 40px; color: #1f4e79; }
+h2 { font-size: 34px; color: #1f4e79; }
+code { font-size: 18px; }
+pre { font-size: 18px; }
+table { font-size: 20px; }
+section.lead h1 { font-size: 46px; }
+.small { font-size: 18px; color: #555; }
+.takeaway { background: #eef4fa; border-left: 6px solid #1f4e79; padding: 10px 18px; margin-top: 18px; }
+.cols { display: flex; gap: 40px; }
+.cols &gt; div { flex: 1; }
+;" data-marpit-pagination-total="24" data-size="16:9">
 <h2 id="summary">Summary</h2>
 <ul>
 <li>Complementarity gives answers independent of how chemistry is written</li>
 <li>Interval certificates prove global stability with solid solutions</li>
-<li>Validated against PHREEQC across 227 example steps</li>
+<li>Non-ideal gases and pressure-dependent log K, to 1500 atm</li>
+<li>Validated against PHREEQC across 377 example steps</li>
 <li>Sensitivities, fitting with uncertainty, and design come built in</li>
 <li>Python, YAML, browser, or a conversation</li>
 </ul>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="23" data-class="lead" data-theme="default" data-style="section {
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="24" data-class="lead" data-theme="default" data-style="section {
   font-size: 24px;
   padding: 50px 70px;
 }

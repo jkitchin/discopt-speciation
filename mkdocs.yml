@@ -33,6 +33,7 @@ nav:
       - Databases: databases.md
       - Your own data: custom-data.md
       - Activity models: activity-models.md
+      - Gases and pressure: gases-and-pressure.md
       - Stability: stability.md
       - Fitting: fitting.md
       - Optimization: optimization.md
