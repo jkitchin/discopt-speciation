@@ -1,0 +1,780 @@
+{
+ "version": "PHREEQC 3.8.7-17149 (IPhreeqc) via phreeqpython 1.6.2",
+ "database": "phreeqc.dat",
+ "cases": [
+  {
+   "id": "co2_P1_T25",
+   "kind": "pressure",
+   "value": 1.0,
+   "input": "SOLUTION 1\n temp 25.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_pressure\n -pressure 1.0\n -temperature 25.0\n CO2(g) 1.0\nEND\n",
+   "tc": 25.0,
+   "P": 1.0,
+   "Vm": 24.330280829497486,
+   "gases": {
+    "CO2(g)": {
+     "moles": 0.0078374366870253,
+     "p": 1.0,
+     "phi": 0.9944716275785639
+    }
+   }
+  },
+  {
+   "id": "co2_P10_T25",
+   "kind": "pressure",
+   "value": 10.0,
+   "input": "SOLUTION 1\n temp 25.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_pressure\n -pressure 10.0\n -temperature 25.0\n CO2(g) 10.0\nEND\n",
+   "tc": 25.0,
+   "P": 10.0,
+   "Vm": 2.3071658296350526,
+   "gases": {
+    "CO2(g)": {
+     "moles": 0.1189569926226818,
+     "p": 10.0,
+     "phi": 0.9453923057110161
+    }
+   }
+  },
+  {
+   "id": "co2_P50_T25",
+   "kind": "pressure",
+   "value": 50.0,
+   "input": "SOLUTION 1\n temp 25.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_pressure\n -pressure 50.0\n -temperature 25.0\n CO2(g) 50.0\nEND\n",
+   "tc": 25.0,
+   "P": 50.0,
+   "Vm": 0.3200558587201465,
+   "gases": {
+    "CO2(g)": {
+     "moles": 1.9292258572130174,
+     "p": 50.0,
+     "phi": 0.7379772589218658
+    }
+   }
+  },
+  {
+   "id": "co2_P100_T25",
+   "kind": "pressure",
+   "value": 100.0,
+   "input": "SOLUTION 1\n temp 25.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_pressure\n -pressure 100.0\n -temperature 25.0\n CO2(g) 100.0\nEND\n",
+   "tc": 25.0,
+   "P": 100.0,
+   "Vm": 0.05612123624327797,
+   "gases": {
+    "CO2(g)": {
+     "moles": 16.407204104964,
+     "p": 100.0,
+     "phi": 0.46414038673662233
+    }
+   }
+  },
+  {
+   "id": "co2_P200_T25",
+   "kind": "pressure",
+   "value": 200.0,
+   "input": "SOLUTION 1\n temp 25.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_pressure\n -pressure 200.0\n -temperature 25.0\n CO2(g) 200.0\nEND\n",
+   "tc": 25.0,
+   "P": 200.0,
+   "Vm": 0.047552261081940016,
+   "gases": {
+    "CO2(g)": {
+     "moles": 19.513529166951784,
+     "p": 200.0,
+     "phi": 0.2858112043285752
+    }
+   }
+  },
+  {
+   "id": "co2_P1_T60",
+   "kind": "pressure",
+   "value": 1.0,
+   "input": "SOLUTION 1\n temp 60.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_pressure\n -pressure 1.0\n -temperature 60.0\n CO2(g) 1.0\nEND\n",
+   "tc": 60.0,
+   "P": 1.0,
+   "Vm": 27.23093247261237,
+   "gases": {
+    "CO2(g)": {
+     "moles": 0.020573492133445424,
+     "p": 1.0,
+     "phi": 0.9960867959563031
+    }
+   }
+  },
+  {
+   "id": "co2_P10_T60",
+   "kind": "pressure",
+   "value": 10.0,
+   "input": "SOLUTION 1\n temp 60.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_pressure\n -pressure 10.0\n -temperature 60.0\n CO2(g) 10.0\nEND\n",
+   "tc": 60.0,
+   "P": 10.0,
+   "Vm": 2.625311454746563,
+   "gases": {
+    "CO2(g)": {
+     "moles": 0.22563679956984567,
+     "p": 10.0,
+     "phi": 0.9613332273155185
+    }
+   }
+  },
+  {
+   "id": "co2_P50_T60",
+   "kind": "pressure",
+   "value": 50.0,
+   "input": "SOLUTION 1\n temp 60.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_pressure\n -pressure 50.0\n -temperature 60.0\n CO2(g) 50.0\nEND\n",
+   "tc": 60.0,
+   "P": 50.0,
+   "Vm": 0.43133696522610043,
+   "gases": {
+    "CO2(g)": {
+     "moles": 1.666331693496543,
+     "p": 50.0,
+     "phi": 0.8163155346176034
+    }
+   }
+  },
+  {
+   "id": "co2_P100_T60",
+   "kind": "pressure",
+   "value": 100.0,
+   "input": "SOLUTION 1\n temp 60.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_pressure\n -pressure 100.0\n -temperature 60.0\n CO2(g) 100.0\nEND\n",
+   "tc": 60.0,
+   "P": 100.0,
+   "Vm": 0.14667888610989105,
+   "gases": {
+    "CO2(g)": {
+     "moles": 5.812117742956259,
+     "p": 100.0,
+     "phi": 0.6540222834614001
+    }
+   }
+  },
+  {
+   "id": "co2_P200_T60",
+   "kind": "pressure",
+   "value": 200.0,
+   "input": "SOLUTION 1\n temp 60.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_pressure\n -pressure 200.0\n -temperature 60.0\n CO2(g) 200.0\nEND\n",
+   "tc": 60.0,
+   "P": 200.0,
+   "Vm": 0.06290486199505489,
+   "gases": {
+    "CO2(g)": {
+     "moles": 14.671738777895884,
+     "p": 200.0,
+     "phi": 0.44697928534295195
+    }
+   }
+  },
+  {
+   "id": "co2_P1_T100",
+   "kind": "pressure",
+   "value": 1.0,
+   "input": "SOLUTION 1\n temp 100.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_pressure\n -pressure 1.0\n -temperature 100.0\n CO2(g) 1.0\nEND\n",
+   "tc": 100.0,
+   "P": 1.0,
+   "Vm": 30.538222467055515,
+   "gases": {
+    "CO2(g)": {
+     "moles": 0.02241722023173135,
+     "p": 1.0,
+     "phi": 0.9973142308580776
+    }
+   }
+  },
+  {
+   "id": "co2_P10_T100",
+   "kind": "pressure",
+   "value": 10.0,
+   "input": "SOLUTION 1\n temp 100.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_pressure\n -pressure 10.0\n -temperature 100.0\n CO2(g) 10.0\nEND\n",
+   "tc": 100.0,
+   "P": 10.0,
+   "Vm": 2.979641146287749,
+   "gases": {
+    "CO2(g)": {
+     "moles": 0.2348511536549455,
+     "p": 10.0,
+     "phi": 0.97345394825767
+    }
+   }
+  },
+  {
+   "id": "co2_P50_T100",
+   "kind": "pressure",
+   "value": 50.0,
+   "input": "SOLUTION 1\n temp 100.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_pressure\n -pressure 50.0\n -temperature 100.0\n CO2(g) 50.0\nEND\n",
+   "tc": 100.0,
+   "P": 50.0,
+   "Vm": 0.5301597651384968,
+   "gases": {
+    "CO2(g)": {
+     "moles": 1.4309573530453081,
+     "p": 50.0,
+     "phi": 0.874104124141472
+    }
+   }
+  },
+  {
+   "id": "co2_P100_T100",
+   "kind": "pressure",
+   "value": 100.0,
+   "input": "SOLUTION 1\n temp 100.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_pressure\n -pressure 100.0\n -temperature 100.0\n CO2(g) 100.0\nEND\n",
+   "tc": 100.0,
+   "P": 100.0,
+   "Vm": 0.22638052706680553,
+   "gases": {
+    "CO2(g)": {
+     "moles": 3.6331160871386197,
+     "p": 100.0,
+     "phi": 0.76537765370796
+    }
+   }
+  },
+  {
+   "id": "co2_P200_T100",
+   "kind": "pressure",
+   "value": 200.0,
+   "input": "SOLUTION 1\n temp 100.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_pressure\n -pressure 200.0\n -temperature 100.0\n CO2(g) 200.0\nEND\n",
+   "tc": 100.0,
+   "P": 200.0,
+   "Vm": 0.09428879634638704,
+   "gases": {
+    "CO2(g)": {
+     "moles": 9.45656718956446,
+     "p": 200.0,
+     "phi": 0.6068769852407778
+    }
+   }
+  },
+  {
+   "id": "mix_P1_T25",
+   "kind": "pressure",
+   "value": 1.0,
+   "input": "SOLUTION 1\n temp 25.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g) n_CH4(g) p_CH4(g) phi_CH4(g) n_N2(g) p_N2(g) phi_N2(g) n_H2O(g) p_H2O(g) phi_H2O(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\"), GAS(\"CH4(g)\"), PR_P(\"CH4(g)\"), PR_PHI(\"CH4(g)\"), GAS(\"N2(g)\"), PR_P(\"N2(g)\"), PR_PHI(\"N2(g)\"), GAS(\"H2O(g)\"), PR_P(\"H2O(g)\"), PR_PHI(\"H2O(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_pressure\n -pressure 1.0\n -temperature 25.0\n CO2(g) 0.4\n CH4(g) 0.4\n N2(g) 0.2\n H2O(g) 0.0\nEND\n",
+   "tc": 25.0,
+   "P": 1.0,
+   "Vm": 24.404806836182114,
+   "gases": {
+    "CO2(g)": {
+     "moles": 0.0043897039102922825,
+     "p": 0.20575060665220143,
+     "phi": 0.9948184932977642
+    },
+    "CH4(g)": {
+     "moles": 0.01237290004621347,
+     "p": 0.5799324379358131,
+     "phi": 0.9977978474383474
+    },
+    "N2(g)": {
+     "moles": 0.0039011017773620967,
+     "p": 0.182849247620829,
+     "phi": 1.0000603633770544
+    },
+    "H2O(g)": {
+     "moles": 0.0006713657966224614,
+     "p": 0.031467707791156534,
+     "phi": 0.9946090580997301
+    }
+   }
+  },
+  {
+   "id": "mix_P20_T25",
+   "kind": "pressure",
+   "value": 20.0,
+   "input": "SOLUTION 1\n temp 25.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g) n_CH4(g) p_CH4(g) phi_CH4(g) n_N2(g) p_N2(g) phi_N2(g) n_H2O(g) p_H2O(g) phi_H2O(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\"), GAS(\"CH4(g)\"), PR_P(\"CH4(g)\"), PR_PHI(\"CH4(g)\"), GAS(\"N2(g)\"), PR_P(\"N2(g)\"), PR_PHI(\"N2(g)\"), GAS(\"H2O(g)\"), PR_P(\"H2O(g)\"), PR_PHI(\"H2O(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_pressure\n -pressure 20.0\n -temperature 25.0\n CO2(g) 8.0\n CH4(g) 8.0\n N2(g) 4.0\n H2O(g) 0.0\nEND\n",
+   "tc": 25.0,
+   "P": 20.0,
+   "Vm": 1.164230491799106,
+   "gases": {
+    "CO2(g)": {
+     "moles": 0.14627383796548812,
+     "p": 5.093964189292123,
+     "phi": 0.9029197423954752
+    },
+    "CH4(g)": {
+     "moles": 0.2998197172278617,
+     "p": 10.441176112194126,
+     "phi": 0.9566114814955151
+    },
+    "N2(g)": {
+     "moles": 0.12720468780484653,
+     "p": 4.429883931419276,
+     "phi": 1.0020241813806638
+    },
+    "H2O(g)": {
+     "moles": 0.0010043336581432233,
+     "p": 0.034975767094477826,
+     "phi": 0.9026448281138449
+    }
+   }
+  },
+  {
+   "id": "mix_P100_T25",
+   "kind": "pressure",
+   "value": 100.0,
+   "input": "SOLUTION 1\n temp 25.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g) n_CH4(g) p_CH4(g) phi_CH4(g) n_N2(g) p_N2(g) phi_N2(g) n_H2O(g) p_H2O(g) phi_H2O(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\"), GAS(\"CH4(g)\"), PR_P(\"CH4(g)\"), PR_PHI(\"CH4(g)\"), GAS(\"N2(g)\"), PR_P(\"N2(g)\"), PR_PHI(\"N2(g)\"), GAS(\"H2O(g)\"), PR_P(\"H2O(g)\"), PR_PHI(\"H2O(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_pressure\n -pressure 100.0\n -temperature 25.0\n CO2(g) 40.0\n CH4(g) 40.0\n N2(g) 20.0\n H2O(g) 0.0\nEND\n",
+   "tc": 25.0,
+   "P": 100.0,
+   "Vm": 0.1886691445219813,
+   "gases": {
+    "CO2(g)": {
+     "moles": 1.4946536312047451,
+     "p": 33.19667298404488,
+     "phi": 0.5870278545295501
+    },
+    "CH4(g)": {
+     "moles": 2.052861233294267,
+     "p": 45.59461912815984,
+     "phi": 0.8194604779682357
+    },
+    "N2(g)": {
+     "moles": 0.9521961804736765,
+     "p": 21.14854208353916,
+     "phi": 1.0643530244912873
+    },
+    "H2O(g)": {
+     "moles": 0.002708917181217393,
+     "p": 0.06016580425612227,
+     "phi": 0.5488239948022156
+    }
+   }
+  },
+  {
+   "id": "mix_P200_T25",
+   "kind": "pressure",
+   "value": 200.0,
+   "input": "SOLUTION 1\n temp 25.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g) n_CH4(g) p_CH4(g) phi_CH4(g) n_N2(g) p_N2(g) phi_N2(g) n_H2O(g) p_H2O(g) phi_H2O(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\"), GAS(\"CH4(g)\"), PR_P(\"CH4(g)\"), PR_PHI(\"CH4(g)\"), GAS(\"N2(g)\"), PR_P(\"N2(g)\"), PR_PHI(\"N2(g)\"), GAS(\"H2O(g)\"), PR_P(\"H2O(g)\"), PR_PHI(\"H2O(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_pressure\n -pressure 200.0\n -temperature 25.0\n CO2(g) 80.0\n CH4(g) 80.0\n N2(g) 40.0\n H2O(g) 0.0\nEND\n",
+   "tc": 25.0,
+   "P": 200.0,
+   "Vm": 0.08628250584978864,
+   "gases": {
+    "CO2(g)": {
+     "moles": 3.869317096735345,
+     "p": 73.24075983956277,
+     "phi": 0.37160653166170443
+    },
+    "CH4(g)": {
+     "moles": 4.537606910288969,
+     "p": 85.89055113708869,
+     "phi": 0.7236219707529955
+    },
+    "N2(g)": {
+     "moles": 2.152808004987756,
+     "p": 40.749643963527205,
+     "phi": 1.1969043733066138
+    },
+    "H2O(g)": {
+     "moles": 0.006289163114330369,
+     "p": 0.11904505982132185,
+     "phi": 0.29633840947452517
+    }
+   }
+  },
+  {
+   "id": "mix_P1_T80",
+   "kind": "pressure",
+   "value": 1.0,
+   "input": "SOLUTION 1\n temp 80.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g) n_CH4(g) p_CH4(g) phi_CH4(g) n_N2(g) p_N2(g) phi_N2(g) n_H2O(g) p_H2O(g) phi_H2O(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\"), GAS(\"CH4(g)\"), PR_P(\"CH4(g)\"), PR_PHI(\"CH4(g)\"), GAS(\"N2(g)\"), PR_P(\"N2(g)\"), PR_PHI(\"N2(g)\"), GAS(\"H2O(g)\"), PR_P(\"H2O(g)\"), PR_PHI(\"H2O(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_pressure\n -pressure 1.0\n -temperature 80.0\n CO2(g) 0.4\n CH4(g) 0.4\n N2(g) 0.2\n H2O(g) 0.0\nEND\n",
+   "tc": 80.0,
+   "P": 1.0,
+   "Vm": 28.867064608257728,
+   "gases": {
+    "CO2(g)": {
+     "moles": 0.010736181728114677,
+     "p": 0.19024396942820618,
+     "phi": 0.9971522449240217
+    },
+    "CH4(g)": {
+     "moles": 0.013151976809092957,
+     "p": 0.23305159482761428,
+     "phi": 1.000848516110247
+    },
+    "N2(g)": {
+     "moles": 0.006258421327366932,
+     "p": 0.11089854344203837,
+     "phi": 1.002496753989773
+    },
+    "H2O(g)": {
+     "moles": 0.026287176012070222,
+     "p": 0.4658058923021411,
+     "phi": 0.9918668916163785
+    }
+   }
+  },
+  {
+   "id": "mix_P20_T80",
+   "kind": "pressure",
+   "value": 20.0,
+   "input": "SOLUTION 1\n temp 80.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g) n_CH4(g) p_CH4(g) phi_CH4(g) n_N2(g) p_N2(g) phi_N2(g) n_H2O(g) p_H2O(g) phi_H2O(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\"), GAS(\"CH4(g)\"), PR_P(\"CH4(g)\"), PR_PHI(\"CH4(g)\"), GAS(\"N2(g)\"), PR_P(\"N2(g)\"), PR_PHI(\"N2(g)\"), GAS(\"H2O(g)\"), PR_P(\"H2O(g)\"), PR_PHI(\"H2O(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_pressure\n -pressure 20.0\n -temperature 80.0\n CO2(g) 8.0\n CH4(g) 8.0\n N2(g) 4.0\n H2O(g) 0.0\nEND\n",
+   "tc": 80.0,
+   "P": 20.0,
+   "Vm": 1.4062430177085152,
+   "gases": {
+    "CO2(g)": {
+     "moles": 0.2002570915705569,
+     "p": 6.478379551302189,
+     "phi": 0.9408783789496284
+    },
+    "CH4(g)": {
+     "moles": 0.2705894900313268,
+     "p": 8.753654640940212,
+     "phi": 0.9769168008827528
+    },
+    "N2(g)": {
+     "moles": 0.13182667049448857,
+     "p": 4.2646340248979495,
+     "phi": 1.008339979712236
+    },
+    "H2O(g)": {
+     "moles": 0.015558791844880484,
+     "p": 0.5033317828596511,
+     "phi": 0.9273413586000578
+    }
+   }
+  },
+  {
+   "id": "mix_P100_T80",
+   "kind": "pressure",
+   "value": 100.0,
+   "input": "SOLUTION 1\n temp 80.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g) n_CH4(g) p_CH4(g) phi_CH4(g) n_N2(g) p_N2(g) phi_N2(g) n_H2O(g) p_H2O(g) phi_H2O(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\"), GAS(\"CH4(g)\"), PR_P(\"CH4(g)\"), PR_PHI(\"CH4(g)\"), GAS(\"N2(g)\"), PR_P(\"N2(g)\"), PR_PHI(\"N2(g)\"), GAS(\"H2O(g)\"), PR_P(\"H2O(g)\"), PR_PHI(\"H2O(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_pressure\n -pressure 100.0\n -temperature 80.0\n CO2(g) 40.0\n CH4(g) 40.0\n N2(g) 20.0\n H2O(g) 0.0\nEND\n",
+   "tc": 80.0,
+   "P": 100.0,
+   "Vm": 0.25551487443343235,
+   "gases": {
+    "CO2(g)": {
+     "moles": 1.2532374864063294,
+     "p": 35.19298176773068,
+     "phi": 0.7480045298472122
+    },
+    "CH4(g)": {
+     "moles": 1.5290110696516281,
+     "p": 42.93716017967161,
+     "phi": 0.9013235967135601
+    },
+    "N2(g)": {
+     "moles": 0.7537974055599878,
+     "p": 21.167878106323485,
+     "phi": 1.0575621935370754
+    },
+    "H2O(g)": {
+     "moles": 0.024997813177123508,
+     "p": 0.7019799462742323,
+     "phi": 0.6957909827450254
+    }
+   }
+  },
+  {
+   "id": "mix_P200_T80",
+   "kind": "pressure",
+   "value": 200.0,
+   "input": "SOLUTION 1\n temp 80.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g) n_CH4(g) p_CH4(g) phi_CH4(g) n_N2(g) p_N2(g) phi_N2(g) n_H2O(g) p_H2O(g) phi_H2O(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\"), GAS(\"CH4(g)\"), PR_P(\"CH4(g)\"), PR_PHI(\"CH4(g)\"), GAS(\"N2(g)\"), PR_P(\"N2(g)\"), PR_PHI(\"N2(g)\"), GAS(\"H2O(g)\"), PR_P(\"H2O(g)\"), PR_PHI(\"H2O(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_pressure\n -pressure 200.0\n -temperature 80.0\n CO2(g) 80.0\n CH4(g) 80.0\n N2(g) 40.0\n H2O(g) 0.0\nEND\n",
+   "tc": 80.0,
+   "P": 200.0,
+   "Vm": 0.12277428065193774,
+   "gases": {
+    "CO2(g)": {
+     "moles": 2.8088472974981444,
+     "p": 73.48374029080283,
+     "phi": 0.5906352279889212
+    },
+    "CH4(g)": {
+     "moles": 3.21041938866956,
+     "p": 83.9894802369318,
+     "phi": 0.8461502182416201
+    },
+    "N2(g)": {
+     "moles": 1.5858303274057028,
+     "p": 41.487746246788085,
+     "phi": 1.1431282666054015
+    },
+    "H2O(g)": {
+     "moles": 0.03971607400277632,
+     "p": 1.0390332254772823,
+     "phi": 0.4988063641962921
+    }
+   }
+  },
+  {
+   "id": "mixV_V20_T25",
+   "kind": "volume",
+   "value": 20.0,
+   "input": "SOLUTION 1\n temp 25.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g) n_CH4(g) p_CH4(g) phi_CH4(g) n_N2(g) p_N2(g) phi_N2(g) n_H2O(g) p_H2O(g) phi_H2O(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\"), GAS(\"CH4(g)\"), PR_P(\"CH4(g)\"), PR_PHI(\"CH4(g)\"), GAS(\"N2(g)\"), PR_P(\"N2(g)\"), PR_PHI(\"N2(g)\"), GAS(\"H2O(g)\"), PR_P(\"H2O(g)\"), PR_PHI(\"H2O(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_volume\n -volume 20.0\n -temperature 25.0\n CO2(g) 10.0\n CH4(g) 10.0\n N2(g) 5.0\n H2O(g) 0.0\nEND\n",
+   "tc": 25.0,
+   "P": 24.576772214436062,
+   "Vm": 0.9250496677767338,
+   "gases": {
+    "CO2(g)": {
+     "moles": 8.478905333743644,
+     "p": 9.638283280761916,
+     "phi": 0.8779809785944652
+    },
+    "CH4(g)": {
+     "moles": 8.759552015896848,
+     "p": 9.957304677738371,
+     "phi": 0.947923882096559
+    },
+    "N2(g)": {
+     "moles": 4.349727077077497,
+     "p": 4.944494614891898,
+     "phi": 1.0082271185620795
+    },
+    "H2O(g)": {
+     "moles": 0.03227628656245856,
+     "p": 0.03668964104387452,
+     "phi": 0.860989148594084
+    }
+   }
+  },
+  {
+   "id": "mixV_V1_T25",
+   "kind": "volume",
+   "value": 1.0,
+   "input": "SOLUTION 1\n temp 25.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g) n_CH4(g) p_CH4(g) phi_CH4(g) n_N2(g) p_N2(g) phi_N2(g) n_H2O(g) p_H2O(g) phi_H2O(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\"), GAS(\"CH4(g)\"), PR_P(\"CH4(g)\"), PR_PHI(\"CH4(g)\"), GAS(\"N2(g)\"), PR_P(\"N2(g)\"), PR_PHI(\"N2(g)\"), GAS(\"H2O(g)\"), PR_P(\"H2O(g)\"), PR_PHI(\"H2O(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_volume\n -volume 1.0\n -temperature 25.0\n CO2(g) 10.0\n CH4(g) 10.0\n N2(g) 5.0\n H2O(g) 0.0\nEND\n",
+   "tc": 25.0,
+   "P": 18.733188664376527,
+   "Vm": 1.2442294880097489,
+   "gases": {
+    "CO2(g)": {
+     "moles": 0.23125695832643228,
+     "p": 5.39022638988254,
+     "phi": 0.9080919894968118
+    },
+    "CH4(g)": {
+     "moles": 0.3957454548527836,
+     "p": 9.224187716824131,
+     "phi": 0.9593415744651923
+    },
+    "N2(g)": {
+     "moles": 0.17521221589875582,
+     "p": 4.0839139146490595,
+     "phi": 1.0026169651138515
+    },
+    "H2O(g)": {
+     "moles": 0.0014956266559486254,
+     "p": 0.03486064302079674,
+     "phi": 0.9047217816163596
+    }
+   }
+  },
+  {
+   "id": "mixV_V0.2_T25",
+   "kind": "volume",
+   "value": 0.2,
+   "input": "SOLUTION 1\n temp 25.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g) n_CH4(g) p_CH4(g) phi_CH4(g) n_N2(g) p_N2(g) phi_N2(g) n_H2O(g) p_H2O(g) phi_H2O(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\"), GAS(\"CH4(g)\"), PR_P(\"CH4(g)\"), PR_PHI(\"CH4(g)\"), GAS(\"N2(g)\"), PR_P(\"N2(g)\"), PR_PHI(\"N2(g)\"), GAS(\"H2O(g)\"), PR_P(\"H2O(g)\"), PR_PHI(\"H2O(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_volume\n -volume 0.2\n -temperature 25.0\n CO2(g) 10.0\n CH4(g) 10.0\n N2(g) 5.0\n H2O(g) 0.0\nEND\n",
+   "tc": 25.0,
+   "P": 10.984819123536866,
+   "Vm": 2.1748216694951963,
+   "gases": {
+    "CO2(g)": {
+     "moles": 0.012585964157606577,
+     "p": 1.5033948449472345,
+     "phi": 0.9468640061321192
+    },
+    "CH4(g)": {
+     "moles": 0.05999853113519176,
+     "p": 7.166831343539016,
+     "phi": 0.9757219001326609
+    },
+    "N2(g)": {
+     "moles": 0.01910085179490593,
+     "p": 2.2815989115439814,
+     "phi": 0.9994672275227139
+    },
+    "H2O(g)": {
+     "moles": 0.00027621592468861806,
+     "p": 0.03299402350663376,
+     "phi": 0.9535463402808988
+    }
+   }
+  },
+  {
+   "id": "mixV_V20_T80",
+   "kind": "volume",
+   "value": 20.0,
+   "input": "SOLUTION 1\n temp 80.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g) n_CH4(g) p_CH4(g) phi_CH4(g) n_N2(g) p_N2(g) phi_N2(g) n_H2O(g) p_H2O(g) phi_H2O(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\"), GAS(\"CH4(g)\"), PR_P(\"CH4(g)\"), PR_PHI(\"CH4(g)\"), GAS(\"N2(g)\"), PR_P(\"N2(g)\"), PR_PHI(\"N2(g)\"), GAS(\"H2O(g)\"), PR_P(\"H2O(g)\"), PR_PHI(\"H2O(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_volume\n -volume 20.0\n -temperature 80.0\n CO2(g) 10.0\n CH4(g) 10.0\n N2(g) 5.0\n H2O(g) 0.0\nEND\n",
+   "tc": 80.0,
+   "P": 25.270398106052852,
+   "Vm": 1.1005231565662659,
+   "gases": {
+    "CO2(g)": {
+     "moles": 7.058890979776473,
+     "p": 9.815620247725992,
+     "phi": 0.9252599529065457
+    },
+    "CH4(g)": {
+     "moles": 7.164347220207203,
+     "p": 9.962260621091904,
+     "phi": 0.9713466968742149
+    },
+    "N2(g)": {
+     "moles": 3.5777633193818312,
+     "p": 4.97499765613429,
+     "phi": 1.0124264459511911
+    },
+    "H2O(g)": {
+     "moles": 0.3721735571152575,
+     "p": 0.5175195811006668,
+     "phi": 0.9042581668049152
+    }
+   }
+  },
+  {
+   "id": "mixV_V1_T80",
+   "kind": "volume",
+   "value": 1.0,
+   "input": "SOLUTION 1\n temp 80.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g) n_CH4(g) p_CH4(g) phi_CH4(g) n_N2(g) p_N2(g) phi_N2(g) n_H2O(g) p_H2O(g) phi_H2O(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\"), GAS(\"CH4(g)\"), PR_P(\"CH4(g)\"), PR_PHI(\"CH4(g)\"), GAS(\"N2(g)\"), PR_P(\"N2(g)\"), PR_PHI(\"N2(g)\"), GAS(\"H2O(g)\"), PR_P(\"H2O(g)\"), PR_PHI(\"H2O(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_volume\n -volume 1.0\n -temperature 80.0\n CO2(g) 10.0\n CH4(g) 10.0\n N2(g) 5.0\n H2O(g) 0.0\nEND\n",
+   "tc": 80.0,
+   "P": 22.226207601754847,
+   "Vm": 1.2609485025340204,
+   "gases": {
+    "CO2(g)": {
+     "moles": 0.26368932276198237,
+     "p": 7.390184170472843,
+     "phi": 0.9345662088364114
+    },
+    "CH4(g)": {
+     "moles": 0.3433295626559519,
+     "p": 9.62218975201464,
+     "phi": 0.974420632963695
+    },
+    "N2(g)": {
+     "moles": 0.16790060480897523,
+     "p": 4.705599676446594,
+     "phi": 1.009473033542975
+    },
+    "H2O(g)": {
+     "moles": 0.01813430855264864,
+     "p": 0.5082340028207721,
+     "phi": 0.9194912613209306
+    }
+   }
+  },
+  {
+   "id": "mixV_V0.2_T80",
+   "kind": "volume",
+   "value": 0.2,
+   "input": "SOLUTION 1\n temp 80.0\n Na 100\n Cl 100\nEND\n\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc gas_p gas_vm n_CO2(g) p_CO2(g) phi_CO2(g) n_CH4(g) p_CH4(g) phi_CH4(g) n_N2(g) p_N2(g) phi_N2(g) n_H2O(g) p_H2O(g) phi_H2O(g)\n 10 PUNCH TC, GAS_P, GAS_VM\n 20 PUNCH GAS(\"CO2(g)\"), PR_P(\"CO2(g)\"), PR_PHI(\"CO2(g)\"), GAS(\"CH4(g)\"), PR_P(\"CH4(g)\"), PR_PHI(\"CH4(g)\"), GAS(\"N2(g)\"), PR_P(\"N2(g)\"), PR_PHI(\"N2(g)\"), GAS(\"H2O(g)\"), PR_P(\"H2O(g)\"), PR_PHI(\"H2O(g)\")\n\nUSE SOLUTION 1\nGAS_PHASE 1\n -fixed_volume\n -volume 0.2\n -temperature 80.0\n CO2(g) 10.0\n CH4(g) 10.0\n N2(g) 5.0\n H2O(g) 0.0\nEND\n",
+   "tc": 80.0,
+   "P": 16.125623951049757,
+   "Vm": 1.760914574780505,
+   "gases": {
+    "CO2(g)": {
+     "moles": 0.023911042937893704,
+     "p": 3.394871493846978,
+     "phi": 0.9529733747973187
+    },
+    "CH4(g)": {
+     "moles": 0.05899394628576991,
+     "p": 8.375915139942325,
+     "phi": 0.9810629111463045
+    },
+    "N2(g)": {
+     "moles": 0.02720743605022662,
+     "p": 3.8628908537254967,
+     "phi": 1.0049474300754804
+    },
+    "H2O(g)": {
+     "moles": 0.0034649184907439255,
+     "p": 0.4919464635349566,
+     "phi": 0.94713858497959
+    }
+   }
+  },
+  {
+   "id": "si_CO2(g)_-3.5",
+   "kind": "fixed_si",
+   "gas": "CO2(g)",
+   "log_p": -3.5,
+   "input": "SOLUTION 1\n temp 25.0\nEND\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc phi si\n 10 PUNCH TC, PR_PHI(\"CO2(g)\"), SI(\"CO2(g)\")\nUSE SOLUTION 1\nEQUILIBRIUM_PHASES 1\n CO2(g) -3.5 10\nEND\n",
+   "tc": 25.0,
+   "phi": 0.9999982493139962,
+   "si": -3.500000760313938
+  },
+  {
+   "id": "si_CO2(g)_0",
+   "kind": "fixed_si",
+   "gas": "CO2(g)",
+   "log_p": 0.0,
+   "input": "SOLUTION 1\n temp 25.0\nEND\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc phi si\n 10 PUNCH TC, PR_PHI(\"CO2(g)\"), SI(\"CO2(g)\")\nUSE SOLUTION 1\nEQUILIBRIUM_PHASES 1\n CO2(g) 0.0 10\nEND\n",
+   "tc": 25.0,
+   "phi": 0.9944716275785639,
+   "si": -0.00240760284808772
+  },
+  {
+   "id": "si_CO2(g)_1",
+   "kind": "fixed_si",
+   "gas": "CO2(g)",
+   "log_p": 1.0,
+   "input": "SOLUTION 1\n temp 25.0\nEND\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc phi si\n 10 PUNCH TC, PR_PHI(\"CO2(g)\"), SI(\"CO2(g)\")\nUSE SOLUTION 1\nEQUILIBRIUM_PHASES 1\n CO2(g) 1.0 10\nEND\n",
+   "tc": 25.0,
+   "phi": 0.9453923057110161,
+   "si": 0.9756120633774614
+  },
+  {
+   "id": "si_CO2(g)_1.7",
+   "kind": "fixed_si",
+   "gas": "CO2(g)",
+   "log_p": 1.7,
+   "input": "SOLUTION 1\n temp 25.0\nEND\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc phi si\n 10 PUNCH TC, PR_PHI(\"CO2(g)\"), SI(\"CO2(g)\")\nUSE SOLUTION 1\nEQUILIBRIUM_PHASES 1\n CO2(g) 1.7 10\nEND\n",
+   "tc": 25.0,
+   "phi": 0.7373710513224565,
+   "si": 1.5676860835037516
+  },
+  {
+   "id": "si_CO2(g)_2",
+   "kind": "fixed_si",
+   "gas": "CO2(g)",
+   "log_p": 2.0,
+   "input": "SOLUTION 1\n temp 25.0\nEND\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc phi si\n 10 PUNCH TC, PR_PHI(\"CO2(g)\"), SI(\"CO2(g)\")\nUSE SOLUTION 1\nEQUILIBRIUM_PHASES 1\n CO2(g) 2.0 10\nEND\n",
+   "tc": 25.0,
+   "phi": 0.46414038673662217,
+   "si": 1.666649359786696
+  },
+  {
+   "id": "si_CH4(g)_-3.5",
+   "kind": "fixed_si",
+   "gas": "CH4(g)",
+   "log_p": -3.5,
+   "input": "SOLUTION 1\n temp 25.0\nEND\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc phi si\n 10 PUNCH TC, PR_PHI(\"CH4(g)\"), SI(\"CH4(g)\")\nUSE SOLUTION 1\nEQUILIBRIUM_PHASES 1\n CH4(g) -3.5 10\nEND\n",
+   "tc": 25.0,
+   "phi": 0.9999992851500821,
+   "si": -3.5000003104554835
+  },
+  {
+   "id": "si_CH4(g)_0",
+   "kind": "fixed_si",
+   "gas": "CH4(g)",
+   "log_p": 0.0,
+   "input": "SOLUTION 1\n temp 25.0\nEND\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc phi si\n 10 PUNCH TC, PR_PHI(\"CH4(g)\"), SI(\"CH4(g)\")\nUSE SOLUTION 1\nEQUILIBRIUM_PHASES 1\n CH4(g) 0.0 10\nEND\n",
+   "tc": 25.0,
+   "phi": 0.9977437205690317,
+   "si": -0.0009809968246159428
+  },
+  {
+   "id": "si_CH4(g)_1",
+   "kind": "fixed_si",
+   "gas": "CH4(g)",
+   "log_p": 1.0,
+   "input": "SOLUTION 1\n temp 25.0\nEND\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc phi si\n 10 PUNCH TC, PR_PHI(\"CH4(g)\"), SI(\"CH4(g)\")\nUSE SOLUTION 1\nEQUILIBRIUM_PHASES 1\n CH4(g) 1.0 10\nEND\n",
+   "tc": 25.0,
+   "phi": 0.9778216777586101,
+   "si": 0.9902596610998216
+  },
+  {
+   "id": "si_CH4(g)_1.7",
+   "kind": "fixed_si",
+   "gas": "CH4(g)",
+   "log_p": 1.7,
+   "input": "SOLUTION 1\n temp 25.0\nEND\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc phi si\n 10 PUNCH TC, PR_PHI(\"CH4(g)\"), SI(\"CH4(g)\")\nUSE SOLUTION 1\nEQUILIBRIUM_PHASES 1\n CH4(g) 1.7 10\nEND\n",
+   "tc": 25.0,
+   "phi": 0.8974197186016639,
+   "si": 1.652995607860093
+  },
+  {
+   "id": "si_CH4(g)_2",
+   "kind": "fixed_si",
+   "gas": "CH4(g)",
+   "log_p": 2.0,
+   "input": "SOLUTION 1\n temp 25.0\nEND\nSELECTED_OUTPUT 1\n -reset false\n -high_precision true\nUSER_PUNCH 1\n -headings tc phi si\n 10 PUNCH TC, PR_PHI(\"CH4(g)\"), SI(\"CH4(g)\")\nUSE SOLUTION 1\nEQUILIBRIUM_PHASES 1\n CH4(g) 2.0 10\nEND\n",
+   "tc": 25.0,
+   "phi": 0.8165904822792865,
+   "si": 1.9120043137235507
+  }
+ ]
+}

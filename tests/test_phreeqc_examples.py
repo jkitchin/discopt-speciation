@@ -68,9 +68,6 @@ LOG_FLOOR = ("log-molality lower bound LOG_LB=-200 (solve.py) pins a redox speci
 WATER_GFW = ("PHREEQC takes the water gfw from the database (phreeqc.dat/pitzer.dat: H 1.008, O 16.00 -> 18.016 g/mol) "
              "while the package uses 18.01528, so removing N mol of water leaves 7.6e-4 relative more water; the "
              "-mass-matched step with the same water mass agrees")
-PENG_ROBINSON = ("phreeqc.dat gives CO2(g)/CH4(g)/N2(g)/H2O(g) critical constants, so PHREEQC uses Peng-Robinson "
-                 "fugacity coefficients for a gas phase; the package gas phase is ideal (the *_ideal_gas variant, same "
-                 "gases without -T_c/-P_c/-Omega, agrees)")
 LOGK_PRESSURE = ("the package has no pressure dependence of logK (PHREEQC's Vm / -analytical pressure terms); above "
                  "100 C PHREEQC runs at P = Psat (15.3 atm at 200 C). Repro: Na/Cl 0.5, Ca 2e-3, C(4) 4e-3, S(6) 2e-3 "
                  "m at 25 C, 200 atm: pH 4.3144 vs PHREEQC 4.2633 (identical at 1 atm)")
@@ -103,7 +100,6 @@ XFAIL = {
     ("ex4", "4a"): WATER_GFW,
     ("stress_T_phreeqc_200C", "*"): LOGK_PRESSURE,
     ("stress_T_pitzer_200C", "*"): LOGK_PRESSURE,
-    ("ex10", "solution1"): PENG_ROBINSON,
     ("stress_trace_1e-30", "fixed-pH"): TRACE_NAN,
     ("stress_trace_1e-30", "reequilibrated"): TRACE_DROP,
     ("stress_surface_dense_lowI", "*"): SURFACE_START,
@@ -112,10 +108,6 @@ XFAIL = {
 }
 for _lab in ("A1", "A5", "B-0.04umol", "B-0.08umol", "B-1umol", "B-4umol"):
     XFAIL[("ex6", _lab)] = EX6_NONCONV
-for _mm in (4, 8, 16, 32, 64, 125, 250, 500, 1000):
-    XFAIL[("ex7", f"fixedP-{_mm}mmol")] = PENG_ROBINSON
-for _mm in (1, 2, 3, 4, 8, 16, 32, 64, 125, 250, 500, 1000):
-    XFAIL[("ex7", f"fixedV-{_mm}mmol")] = PENG_ROBINSON
 # at 36 mol removed the gfw difference is 0.026 g in 0.35 kg (7e-5 relative), inside the 1e-4 tolerance
 for _x in ("48", "54", "54.5", "54.876"):
     XFAIL[("stress_pitzer_evaporite", f"H2O-{_x}")] = WATER_GFW

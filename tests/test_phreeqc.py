@@ -151,9 +151,10 @@ def test_fixed_volume_gas(db):
     s = db.system(["Na", "C(4)"], gas_phase={"members": ["CO2(g)"], "volume": 1.0})
     r = s.equilibrate(amt)
     assert r.converged
-    # PHREEQC uses a slightly different gas treatment; agreement is ~1e-4 relative
-    assert close(r.pH, rf["pH"], abs_=1e-3)
-    assert close(r.gases["CO2(g)"], rf["n_co2g"], rel=1e-3)
+    # both use Peng-Robinson for CO2(g) (phi = 0.99987 at 0.023 atm); agreement is ~1e-6 in pH, 1.4e-5 in moles,
+    # within PHREEQC's convergence and its gas constant (0.0820597 against 0.0820574 L atm/mol/K)
+    assert close(r.pH, rf["pH"], abs_=5e-5)
+    assert close(r.gases["CO2(g)"], rf["n_co2g"], rel=1e-4)
 
 
 # --------------------------------------------------------------------------- llnl.dat and sit.dat

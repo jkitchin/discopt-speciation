@@ -72,6 +72,30 @@ s.solid_solution("Arag-Stront", ["Aragonite", "Strontianite"], guggenheim=[3.43,
 s.electron()                                         # e- for redox; then equilibrate(..., pe=4)
 ```
 
+### Gases with critical constants
+
+A gas with a critical temperature `Tc` (K), critical pressure `Pc` (atm) and
+acentric factor `omega` follows the [Peng–Robinson](references.md#peng1976)
+equation of state; one without them is ideal (see [Concepts](concepts.md#unknowns-and-equations)).
+
+```python
+s.gas("Ar(g)", Tc=150.8, Pc=48.0, omega=0.0)          # when declaring it
+s.critical_constants("CO2(g)", Tc=304.2, Pc=72.86, omega=0.225)   # or later, e.g. for a database gas
+s.gas_phase(["CO2(g)", "Ar(g)"], pressure=100.0,
+            kij={("CO2(g)", "Ar(g)"): 0.1})            # optional binary parameters (default 0)
+s.gas_phase(["CO2(g)"], volume=1.0, eos="ideal")      # per phase: "ideal" or "peng-robinson"
+System("name", gas_eos="ideal")                       # the whole system, fixed pressures included
+```
+
+- **Mixing.** All members of a Peng–Robinson gas phase need constants. A phase
+  that mixes gases with and without them raises an error, as in PHREEQC.
+- **Defaults for `kij`.** Pairs not given use the database's
+  `GAS_BINARY_PARAMETERS`, then PHREEQC's built-in values for H₂O(g) with CO₂,
+  H₂S, CH₄ and N₂ ([Søreide and Whitson 1992](references.md#soreide1992)).
+- **Limits.** The gas is one vapor phase, on the largest root of the cubic.
+  Condensation (for example liquid CO₂ below 31 °C) is not modelled, and the
+  `gibbs` method and `optimize` do not support Peng–Robinson gases.
+
 ## 2. YAML / JSON specification
 
 The same content as a strictly validated document (unknown keys are errors):
@@ -107,7 +131,8 @@ s.to_spec()                       # any System back to a spec dict
 - `gas_phases`
 - `masters`: input aliases such as `{Ca: Ca+2}`
 - species `phase`: `solvent`, `gas`, `exchange`, `surface` or `electron`
-- species `params`: extra activity parameters
+- species `params`: extra activity parameters; for a gas, `{Tc: 304.2, Pc: 72.86, omega: 0.225}`
+- `gas_eos` (`auto`, `ideal`, `peng-robinson`), and per gas phase `eos` and `kij: [[CO2(g), CH4(g), 0.1]]`
 - reaction fields `analytic`, `dCp` and `dV`
 
 **Activity models.** An activity model is given as a name or a dict, for
@@ -195,6 +220,19 @@ s = db.system(["Ca", "S(6)"], phases=["Gypsum"])
 ```
 
 **Units.** `delta_h` is read in kJ/mol unless followed by `kcal` (or `J`).
+
+**Gases.** Give critical constants as in PHREEQC, and binary parameters in a
+`GAS_BINARY_PARAMETERS` block:
+
+```text
+PHASES
+Ar(g)
+    Ar = Ar
+    log_k -2.85
+    -T_c 150.8; -P_c 48.0; -Omega 0.0
+GAS_BINARY_PARAMETERS
+CO2(g)  Ar(g)  0.1
+```
 
 **Pitzer data.** Add a `PITZER` block to your file, or build the parameters in
 Python:

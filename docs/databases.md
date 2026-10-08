@@ -52,7 +52,8 @@ defines, and `db.system(activity="auto")` uses it:
 |-------|------|
 | `SOLUTION_MASTER_SPECIES` | element and valence names, master species |
 | `SOLUTION_SPECIES` | reaction, `log_k`, `delta_h` (with units), `-analytic`, `-gamma a0 b` |
-| `PHASES` | dissolution reaction, `log_k`, `delta_h`, `-analytic`; gases are the names ending in `(g)` |
+| `PHASES` | dissolution reaction, `log_k`, `delta_h`, `-analytic`; gases are the names ending in `(g)`, with `-T_c`, `-P_c`, `-Omega` |
+| `GAS_BINARY_PARAMETERS` | Peng–Robinson $k_{ij}$ per gas pair |
 | `EXCHANGE_MASTER_SPECIES`, `EXCHANGE_SPECIES` | [Gaines–Thomas](references.md#gaines1953) exchange reactions, `-gamma` |
 | `SURFACE_MASTER_SPECIES`, `SURFACE_SPECIES` | surface complexation reactions ([diffuse double layer](references.md#dzombak1990)) |
 | `PITZER` | `-B0 -B1 -B2 -C0 -THETA -LAMDA -ZETA -PSI` with temperature coefficients |
@@ -63,10 +64,13 @@ defines, and `db.system(activity="auto")` uses it:
 **Temperature.** With `-analytic`, $\log K(T)$ uses the analytic expression.
 Otherwise it uses van 't Hoff with `delta_h`, which is PHREEQC's precedence.
 
-**Ignored.** Molar volumes (`-Vm`) and pressure corrections are ignored. So are
-Peng–Robinson gas parameters (gases are ideal), diffusion coefficients,
-`-dw` and `RATES` are ignored too. Results at high pressure, or for strongly
-non-ideal gases, differ from PHREEQC.
+**Gases.** The Peng–Robinson critical constants `-T_c`, `-P_c` and `-Omega`
+are read, as is `GAS_BINARY_PARAMETERS`. Gases that have them are non-ideal, as
+in PHREEQC; see [Concepts](concepts.md#unknowns-and-equations).
+
+**Ignored.** Molar volumes (`-Vm`) and the pressure dependence of $\log K$ are
+ignored, and so are diffusion coefficients, `-dw` and `RATES`. Results at high
+pressure therefore differ from PHREEQC.
 
 **Redox in [`llnl.dat`](https://github.com/jkitchin/discopt-speciation/blob/main/src/discopt/speciation/data/llnl.dat) and [`sit.dat`](https://github.com/jkitchin/discopt-speciation/blob/main/src/discopt/speciation/data/sit.dat).** These files write many redox
 reactions with dissolved O₂ instead of the electron, for example

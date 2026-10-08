@@ -32,7 +32,9 @@ one) until complementarity holds to tolerance.
 Unknowns (in order): log10 molality of aqueous species, log10 mol of exchange
 and surface species, log10 activity of virtual species (``e-``, ``X-``); phase
 amounts ``N``; for each non-ideal solid solution, the log10 mole fractions of
-its members and its undersaturation ``s``; water mass ``W`` (kg, when water is a
+its members and its undersaturation ``s``; for each Peng-Robinson gas phase at
+fixed pressure, its log10 mole fractions, undersaturation and log10 molar volume
+(L/mol), and at fixed volume its log10 member amounts (mol); water mass ``W`` (kg, when water is a
 species and its mass is free); ionic strength ``I``; surface potentials ``psi`` (V, diffuse double
 layer); the charge-balance adjustment ``delta`` (mol).
 """
@@ -52,6 +54,7 @@ from discopt.solvers.nlp_backend import get_nlp_solver
 
 from discopt.speciation import water as WP
 from discopt.speciation.activity import EXPR, NUM, ActivityModel, Ideal, _is_zero, ionic_strength, truesdell_jones_ln_gamma
+from discopt.speciation.eos import R_LATM
 from discopt.speciation.network import Network
 from discopt.speciation.species import ATM_BAR
 
@@ -87,6 +90,8 @@ class Layout:
     delta: int | None
     n: int
     X: dict = field(default_factory=dict)  # non-ideal solid-solution phase -> start of its (log10 x..., s) block
+    #: Peng-Robinson gas phase -> start of its block: (log10 x..., s, log10 Vm) at fixed P, (log10 n...) at fixed V
+    G: dict = field(default_factory=dict)
 
     def N(self, x):
         return np.asarray(x[self.ny : self.ny + len(self.Nph)], float)
@@ -100,6 +105,10 @@ def layout(net: Network, act: ActivityModel) -> Layout:
     for p in Nph:
         if net.phases[p].model is not None:
             X[p], pos = pos, pos + len(net.phases[p].members) + 1
+    G = {}
+    for p, ph in enumerate(net.phases):
+        if ph.eos is not None:
+            G[p], pos = pos, pos + _gas_block(ph)
     W = I = psi = delta = None
     if net.water is not None and net.water_mass is None:
         W, pos = pos, pos + 1
@@ -110,7 +119,11 @@ def layout(net: Network, act: ActivityModel) -> Layout:
         psi, pos = pos, pos + npsi
     if net.cb is not None:
         delta, pos = pos, pos + 1
-    return Layout(ny, Nph, W, I, psi, npsi, delta, pos, X)
+    return Layout(ny, Nph, W, I, psi, npsi, delta, pos, X, G)
+
+
+def _gas_block(ph) -> int:
+    return len(ph.members) + (2 if ph.kind == "gas_p" else 0)
 
 
 def _needs_I(net, act) -> bool:
@@ -131,8 +144,14 @@ def _vars(net, L, x) -> dict:
     for p, a in L.X.items():
         nm = len(net.phases[p].members)
         X[p] = ([x[a + j] for j in range(nm)], x[a + nm])
+    G = {}
+    for p, a in L.G.items():
+        nm = len(net.phases[p].members)
+        lx = [x[a + j] for j in range(nm)]
+        G[p] = (lx, x[a + nm], x[a + nm + 1]) if net.phases[p].kind == "gas_p" else (lx,)
     return {
         "X": X,
+        "G": G,
         "y": [x[i] for i in range(L.ny)],
         "N": N,
         "W": x[L.W] if L.W is not None else (net.water_mass if net.water_mass is not None else net.W0),
@@ -193,7 +212,17 @@ def state(o, net: Network, act: ActivityModel, ctx, v: dict) -> dict:
     s_ph, sig_ph, x_ph, nph = [None] * nph_, [None] * nph_, [None] * nph_, [None] * nph_
     for p, ph in enumerate(net.phases):
         leq = [la_eq[k] for k in ph.members]
-        if ph.model is not None:  # non-ideal: composition and s are unknowns (see equations)
+        if ph.eos is not None and ph.kind == "gas_v":  # Peng-Robinson, fixed V: amounts are unknowns
+            nph[p] = [10.0**e for e in v["G"][p][0]]
+            tot = o.sum(nph[p])
+            sig_ph[p], x_ph[p] = 0.0, [a / tot for a in nph[p]]
+            for k, a in zip(ph.members, nph[p]):
+                n[k] = a
+            continue
+        if ph.eos is not None:  # Peng-Robinson, fixed P: composition and s are unknowns (see equations)
+            lx, sv, _ = v["G"][p]
+            frac, sig = [10.0**e for e in lx], math.log10(ph.pressure) - sv
+        elif ph.model is not None:  # non-ideal: composition and s are unknowns (see equations)
             lx, sv = v["X"][p]
             frac, sig = [10.0**e for e in lx], -sv
         elif len(leq) == 1:
@@ -208,7 +237,10 @@ def state(o, net: Network, act: ActivityModel, ctx, v: dict) -> dict:
             for k, a in zip(ph.members, nph[p]):
                 n[k] = a
             continue
-        s_ph[p] = (-sig) if ph.kind in ("pure", "ss") else (math.log10(ph.pressure) - sig)
+        if ph.eos is not None:
+            s_ph[p] = v["G"][p][1]
+        else:
+            s_ph[p] = (-sig) if ph.kind in ("pure", "ss") else (math.log10(ph.pressure) - sig)
         N = v["N"][p]
         nph[p] = [N if (isinstance(f, float) and f == 1.0) else N * f for f in frac]
         for k, a in zip(ph.members, nph[p]):
@@ -269,6 +301,20 @@ def equations(o, net, act, ctx, v, st) -> list:
             val = lx[j] + lnl[ph.mpos[j]] * (1.0 / LN10) - st["la_eq"][k] - sv
             out.append((f"ss_{ph.name}_{net.species[k].name}", val, "mass_action"))
         out.append((f"ss_{ph.name}_sum", o.sum(xs) - 1.0, "balance"))
+    for p, blk in v["G"].items():
+        # Peng-Robinson gas: log10 f_j = SI_j (+ s at fixed P), with f from the amounts and volume
+        ph = net.phases[p]
+        if ph.kind == "gas_v":
+            lnf, sv = ph.eos.ln_fugacity(o, st["nph"][p], float(ph.volume), net.T), 0.0
+        else:
+            xs, Vm, sv = st["x"][p], 10.0 ** blk[2], blk[1]
+            lnf = ph.eos.ln_fugacity(o, xs, Vm, net.T)
+            out.append((f"gas_{ph.name}_sum", o.sum(xs) - 1.0, "balance"))
+            out.append((f"gas_{ph.name}_pressure", ph.eos.pressure(o, xs, Vm, net.T) * (1.0 / ph.pressure) - 1.0,
+                        "balance"))
+        for j, k in enumerate(ph.members):
+            out.append((f"gas_{ph.name}_{net.species[k].name}", lnf[j] * (1.0 / LN10) - st["la_eq"][k] - sv,
+                        "mass_action"))
     return out
 
 
@@ -334,7 +380,28 @@ def initial_point(net: Network, act: ActivityModel) -> np.ndarray:
     for p, a in L.X.items():
         nm = len(net.phases[p].members)
         x[a : a + nm] = -math.log10(nm)
+    for p, a in L.G.items():  # refined by seed_compositions
+        ph = net.phases[p]
+        nm = len(ph.members)
+        lb, ub = _gas_bounds(net, ph)
+        if ph.kind == "gas_p":
+            x[a : a + nm] = -math.log10(nm)
+            x[a + nm + 1] = min(max(math.log10(R_LATM * net.T / ph.pressure), lb[-1]), ub[-1])
+        else:
+            x[a : a + nm] = min(math.log10(1e-3 * ph.volume / (R_LATM * net.T)), ub[0])
     return x
+
+
+def _gas_bounds(net, ph):
+    """Bounds of a Peng-Robinson gas block: ``log10 x`` and ``log10 Vm`` (fixed P) or ``log10 n`` (fixed V)."""
+    _, b = ph.eos.coefficients(net.T)
+    nm = len(ph.members)
+    if ph.kind == "gas_p":
+        # V_m above every b keeps V_m - b_mix > 0; the vapor root has Z = P V_m / RT well below 10
+        vlo, vhi = math.log10(1.0001 * float(max(b))), math.log10(10.0 * R_LATM * net.T / ph.pressure)
+        return [LOG_LB] * nm + [-S_B, vlo], [0.0] * nm + [S_B, max(vhi, vlo + 1.0)]
+    # sum_j n_j b_j < V
+    return [LOG_LB] * nm, [math.log10(0.99 * ph.volume / (nm * float(max(b))))] * nm
 
 
 def _eliminate(A, b, col):
@@ -488,6 +555,9 @@ def convert(net, act_from, x, act_to) -> np.ndarray:
     for p, a in La.X.items():
         nm = len(net.phases[p].members) + 1
         out[Lb.X[p] : Lb.X[p] + nm] = x[a : a + nm]
+    for p, a in La.G.items():
+        nm = _gas_block(net.phases[p])
+        out[Lb.G[p] : Lb.G[p] + nm] = x[a : a + nm]
     if Lb.I is not None:
         v, st = evaluate(net, act_from, x)
         z = [net.species[k].charge for k in net.aq_idx]
@@ -553,6 +623,10 @@ def model_variables(m, net: Network, act: ActivityModel, free_sign: bool = False
         lx = m.continuous(f"log10_x_{p}", shape=(nm,), lb=LOG_LB, ub=0.0)
         xs += [lx[i] for i in range(nm)]
         xs.append(m.continuous(f"s_{p}", lb=-S_B, ub=S_B))
+    for p in L.G:
+        lb, ub = _gas_bounds(net, net.phases[p])
+        g = m.continuous(f"gas_{p}", shape=(len(lb),), lb=np.array(lb), ub=np.array(ub))
+        xs += [g[i] for i in range(len(lb))]
     if L.W is not None:
         xs.append(m.continuous("W", lb=1e-4 * net.W0, ub=1e2 * net.W0))
     if L.I is not None:
@@ -608,6 +682,8 @@ def seed_compositions(net, act, x) -> np.ndarray:
     ``D(x) = sum x_j (ln x_j + ln lambda_j - ln10 SI_j)`` is the physical root.
     """
     L = layout(net, act)
+    if L.G:
+        x = _seed_gases(net, act, x)
     if not L.X:
         return x
     from scipy.optimize import minimize
@@ -638,6 +714,54 @@ def seed_compositions(net, act, x) -> np.ndarray:
         lnl = ph.model.ln_lambda(NUM, ph.fractions(list(best)))
         x[a : a + nm] = lx
         x[a + nm] = float(np.clip(np.mean([lx[j] + lnl[ph.mpos[j]] / LN10 - SI[j] for j in range(nm)]), -S_B, S_B))
+    return x
+
+
+def _seed_gases(net, act, x) -> np.ndarray:
+    """Start each Peng-Robinson gas at the composition (fixed P) or amounts (fixed V) its fugacities give at ``x``.
+
+    Fixed P: successive substitution :math:`x_j \\propto f_j/\\varphi_j(x)`, the
+    vapor-root molar volume, and the undersaturation
+    :math:`s = \\log_{10}P - \\log_{10}\\sum_j f_j/\\varphi_j`. Fixed V:
+    :math:`n_j \\leftarrow n_j f_j/f_j(n)`, from the ideal-gas amounts.
+    """
+    L = layout(net, act)
+    x = np.asarray(x, float).copy()
+    _, st = evaluate(net, act, x)
+    for p, a in L.G.items():
+        ph = net.phases[p]
+        nm = len(ph.members)
+        lb, ub = (np.array(t) for t in _gas_bounds(net, ph))
+        lnf = np.clip(np.array([float(st["la_eq"][k]) for k in ph.members]) * LN10, -400.0, 400.0)
+        try:
+            if ph.kind == "gas_p":
+                lnphi = np.zeros(nm)
+                for _ in range(100):
+                    w = lnf - lnphi  # ln(f_j / phi_j)
+                    xs = np.exp(w - w.max())
+                    xs /= xs.sum()
+                    new = ph.eos.ln_phi(xs, net.T, ph.pressure)
+                    done = np.max(np.abs(new - lnphi)) < 1e-12
+                    lnphi = new
+                    if done:
+                        break
+                w = lnf - lnphi
+                sig = (w.max() + math.log(np.exp(w - w.max()).sum())) / LN10
+                blk = list(np.log10(np.maximum(xs, 1e-300))) + [math.log10(ph.pressure) - sig,
+                                                                 math.log10(ph.eos.molar_volume(xs, net.T, ph.pressure))]
+            else:
+                RT = R_LATM * net.T
+                ln_n = np.minimum(lnf + math.log(ph.volume / RT), ub * LN10)
+                for _ in range(200):
+                    f = np.array(ph.eos.ln_fugacity(NUM, list(np.exp(ln_n)), ph.volume, net.T))
+                    step = np.clip(lnf - f, -2.0, 2.0)
+                    ln_n = np.minimum(ln_n + step, ub * LN10)
+                    if np.max(np.abs(step)) < 1e-12:
+                        break
+                blk = list(ln_n / LN10)
+        except (ArithmeticError, ValueError, FloatingPointError):
+            continue  # keep the start; the NLP solves from there
+        x[a : a + len(lb)] = np.clip(blk, lb, ub)
     return x
 
 
@@ -770,6 +894,9 @@ def _gibbs_check(net, act):
         raise NotImplementedError("method='gibbs' does not support electrostatic surfaces; use 'complementarity'")
     if net.water is not None and net.water_mass is not None:
         raise NotImplementedError("method='gibbs' needs a free water mass when water is a species")
+    if any(ph.eos is not None for ph in net.phases):
+        raise NotImplementedError("method='gibbs' does not support Peng-Robinson gas phases; use 'complementarity', "
+                                  "or eos='ideal' for the gas phase")
 
 
 def _gibbs_terms(o, net, act, ctx, amounts: dict, W, sc: float = 1.0):
@@ -924,6 +1051,8 @@ def gibbs_energy(net: Network, x, act: ActivityModel) -> float | None:
     G only between states of one system with the same inputs.
     """
     if not act.has_excess or net.surfaces or (net.water is not None and net.water_mass is not None):
+        return None
+    if any(ph.eos is not None for ph in net.phases):
         return None
     v, st = evaluate(net, act, x)
     amounts = {k: max(float(val), 0.0) for k, val in st["n"].items()}

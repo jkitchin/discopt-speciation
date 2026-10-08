@@ -10,6 +10,7 @@ import numpy as np
 
 from discopt.speciation import solve as _solve
 from discopt.speciation.activity import NUM, ActivityModel, get_activity_model, ionic_strength
+from discopt.speciation.eos import R_LATM, PengRobinson, check_eos, critical_constants, normalize_kij, pure_ln_phi
 from discopt.speciation.network import build_network, validate_structure
 from discopt.speciation.phases import GasPhase, SolidSolution, SurfaceType
 from discopt.speciation.species import T_REF, Reaction, Species, parse_charge
@@ -59,7 +60,10 @@ class Result:
     the inputs (1 kg of water initially, so input amounts are molalities);
     ``molality`` is mol/kg of the equilibrium water mass. ``SI`` is the log10
     saturation of each solid (``log10(Q/K)`` per formula unit; ``0`` when present
-    as a pure phase) and the log10 partial pressure (atm) of each gas.
+    as a pure phase) and the log10 fugacity (atm) of each gas, which for an ideal
+    gas is its log10 partial pressure. ``partial_pressure`` is the gas's partial
+    pressure (atm) and ``fugacity_coefficient`` its fugacity over its partial
+    pressure (1 for an ideal gas).
     """
 
     converged: bool
@@ -91,6 +95,9 @@ class Result:
     charge_balance_adjustment: float | None = None
     #: per solid solution (and second copies across a miscibility gap): present, amount (mol), mole_fraction
     solid_solutions: dict = field(default_factory=dict)
+    fugacity_coefficient: dict = field(default_factory=dict)
+    #: per gas phase: present, amount (mol), pressure (atm), volume (L), molar_volume (L/mol), mole_fraction, eos
+    gas_phases: dict = field(default_factory=dict)
     #: global stability certificate (:class:`~discopt.speciation.stability.Certificate`), when computed
     certificate: object = None
     #: internal: what produced this state (system, network, activity model, solution vector,
@@ -133,10 +140,15 @@ class Result:
             for k, v in self.solids.items():
                 lines.append(f"{k:<20}{v:>14.6e}{self.SI[k]:>12.4f}")
         if self.gases or self.partial_pressure:
-            lines.append(f"{'gas':<20}{'amount':>14}{'log10 P':>12}")
+            lines.append(f"{'gas':<20}{'amount':>14}{'log10 P':>12}{'phi':>10}")
             for k, p in self.partial_pressure.items():
                 amount = f"{self.gases[k]:>14.6e}" if k in self.gases and math.isfinite(self.gases[k]) else f"{'fixed':>14}"
-                lines.append(f"{k:<20}{amount}{math.log10(p) if p > 0 else -math.inf:>12.4f}")
+                lines.append(f"{k:<20}{amount}{math.log10(p) if p > 0 else -math.inf:>12.4f}"
+                             f"{self.fugacity_coefficient.get(k, 1.0):>10.4f}")
+        for name, d in self.gas_phases.items():
+            if d["present"]:
+                lines.append(f"gas phase {name} ({d['eos']}): {d['amount']:.6e} mol, P = {d['pressure']:.6g} atm, "
+                             f"V = {d['volume']:.6g} L")
         for k, v in self.potential.items():
             lines.append(f"surface {k}: psi = {v:.6g} V")
         for name, d in self.solid_solutions.items():
@@ -172,6 +184,10 @@ class Result:
             "pe": self.pe,
             "gases": dict(self.gases),
             "partial_pressure": dict(self.partial_pressure),
+            "fugacity_coefficient": dict(self.fugacity_coefficient),
+            "gas_phases": {k: dict(v, mole_fraction=dict(v["mole_fraction"]),
+                                   fugacity_coefficient=dict(v["fugacity_coefficient"]))
+                           for k, v in self.gas_phases.items()},
             "exchange": dict(self.exchange),
             "surface": dict(self.surface),
             "potential": dict(self.potential),
@@ -200,9 +216,14 @@ class System:
     matter, so a reaction doubled with doubled ``logK`` gives the same equilibrium.
     """
 
-    def __init__(self, name: str = "system", T: float = T_REF, activity="ideal"):
+    def __init__(self, name: str = "system", T: float = T_REF, activity="ideal", gas_eos: str = "auto"):
         self.name = name
         self.T = float(T)
+        #: gas equation of state: "auto" (Peng-Robinson for gases with critical constants), "ideal" or
+        #: "peng-robinson"; applies to gas phases without their own ``eos`` and to fixed partial pressures
+        self.gas_eos = check_eos(gas_eos)
+        #: default Peng-Robinson binary parameters, ``{frozenset((gas_i, gas_j)): k}`` (PHREEQC GAS_BINARY_PARAMETERS)
+        self.gas_kij: dict = {}
         self.activity: ActivityModel = get_activity_model(activity)
         self._species: dict[str, Species] = {}
         self.reactions: list[Reaction] = []
@@ -242,9 +263,32 @@ class System:
         """A solid: a pure phase (unit activity, may be absent) unless placed in a solid solution."""
         return self._add(Species(name, "solid"))
 
-    def gas(self, name: str) -> Species:
-        """A gas; put it in a :meth:`gas_phase` or fix its log10 partial pressure (atm) in ``equilibrate``."""
-        return self._add(Species(name, "gas"))
+    def gas(self, name: str, *, Tc: float | None = None, Pc: float | None = None, omega: float | None = None) -> Species:
+        """A gas; put it in a :meth:`gas_phase` or fix its log10 partial pressure (atm) in ``equilibrate``.
+
+        ``Tc`` (K), ``Pc`` (atm) and the acentric factor ``omega`` make it a
+        Peng-Robinson gas (see :meth:`critical_constants`).
+        """
+        sp = self._add(Species(name, "gas"))
+        if Tc is not None or Pc is not None:
+            self.critical_constants(sp, Tc, Pc, omega)
+        return sp
+
+    def critical_constants(self, gas, Tc: float, Pc: float, omega: float | None = 0.0) -> Species:
+        """Set the critical temperature ``Tc`` (K), pressure ``Pc`` (atm) and acentric factor ``omega`` of ``gas``.
+
+        Gases with critical constants follow the Peng-Robinson equation of state
+        (unless ``gas_eos="ideal"``): in a gas phase, and at a fixed partial
+        pressure, which then sets the fugacity :math:`\\varphi P`. Database gases
+        take them from ``-T_c``, ``-P_c`` and ``-Omega``.
+        """
+        sp = self._resolve(gas)
+        if sp.phase != "gas":
+            raise ValueError(f"{sp.name!r} is not a gas")
+        if Tc is None or Pc is None or not Tc > 0 or not Pc > 0:
+            raise ValueError(f"{sp.name}: critical constants need Tc > 0 (K) and Pc > 0 (atm)")
+        sp.params.update(Tc=float(Tc), Pc=float(Pc), omega=float(omega or 0.0))
+        return sp
 
     def electron(self, name: str = "e-") -> Species:
         """The aqueous electron for redox reactions (``pe = -log10 a(e-)``)."""
@@ -306,9 +350,15 @@ class System:
         self.solid_solutions.append(ss)
         return ss
 
-    def gas_phase(self, members, pressure: float | None = 1.0, volume: float | None = None, name: str = "gas") -> GasPhase:
-        """Ideal gas phase at fixed total ``pressure`` (atm) or fixed ``volume`` (L)."""
-        gp = GasPhase([self._resolve(m) for m in members], pressure, volume, name)
+    def gas_phase(self, members, pressure: float | None = 1.0, volume: float | None = None, name: str = "gas", *,
+                  eos: str | None = None, kij=None) -> GasPhase:
+        """Gas phase at fixed total ``pressure`` (atm) or fixed ``volume`` (L).
+
+        ``eos`` (``"ideal"``, ``"peng-robinson"``; default: the system's ``gas_eos``)
+        and ``kij`` (binary parameters ``{(gas_i, gas_j): k}``) are described in
+        :class:`~discopt.speciation.phases.GasPhase`.
+        """
+        gp = GasPhase([self._resolve(m) for m in members], pressure, volume, name, eos=eos, kij=kij)
         for m in gp.members:
             if m.phase != "gas":
                 raise ValueError(f"{m.name!r} is not a gas")
@@ -477,11 +527,27 @@ class System:
         sup = [self._resolve(k) for k in (suppress or [])]
         phases = [p for p in self.solid_solutions + self.gas_phases]
         phases = _drop_suppressed(phases, set(sup))
+        eos = {}
+        for ph in phases:
+            if isinstance(ph, GasPhase):
+                kij = dict(self.gas_kij)
+                kij.update(normalize_kij(ph.kij))
+                eos[id(ph)] = PengRobinson.for_members(ph.members, kij, ph.eos or self.gas_eos)
+        # a fixed partial pressure P of a Peng-Robinson gas fixes its fugacity phi(T, P) P (pure gas at P, as PHREEQC)
+        logphi = {}
+        if self.gas_eos != "ideal":
+            for sp in list(fixed_r):
+                if sp.phase == "gas" and critical_constants(sp) is not None:
+                    logphi[sp] = pure_ln_phi(sp, T, 10.0 ** fixed_r[sp]) / math.log(10.0)
+                    fixed_r[sp] += logphi[sp]
+                elif sp.phase == "gas" and self.gas_eos == "peng-robinson":
+                    raise ValueError(f"gas {sp.name!r} has no critical constants (gas_eos='peng-robinson')")
         wm = water_mass
         has_solvent = any(s.phase == "solvent" for s in self.species)
         net = build_network(self.species, self.reactions, amt, fixed_r, T, P=P, phases=phases,
                             surfaces=self.surface_types, water_mass=wm if (wm is not None and has_solvent) else None,
-                            charge_balance=cb, suppress=sup)
+                            charge_balance=cb, suppress=sup, eos=eos)
+        net.fixed_logphi = {k: logphi[s] for k, s in enumerate(net.species) if s in logphi}
         if not has_solvent and wm is not None:
             net.W0 = float(wm)
         return net, act
@@ -515,7 +581,7 @@ def _drop_suppressed(phases, sup):
         if len(mem) == len(ph.members):
             out.append(ph)
         elif isinstance(ph, GasPhase):
-            out.append(GasPhase(mem, ph.pressure, ph.volume, ph.name))
+            out.append(GasPhase(mem, ph.pressure, ph.volume, ph.name, eos=ph.eos, kij=ph.kij))
         elif ph.guggenheim is not None:
             raise ValueError(f"cannot suppress a member of the binary non-ideal solid solution {ph.name!r}")
         else:
@@ -540,6 +606,38 @@ def _suppressed_si(system, solid, log10_a, T, P) -> float:
     return -math.inf
 
 
+def _gas_phase_info(net, st, active) -> dict:
+    out = {}
+    for p, ph in enumerate(net.phases):
+        if ph.kind not in ("gas_p", "gas_v"):
+            continue
+        amounts = [float(a) for a in st["nph"][p]]
+        tot = math.fsum(amounts)
+        present = ph.kind == "gas_v" or p in active
+        names = [net.species[k].name for k in ph.members]
+        if ph.kind == "gas_v":
+            V = float(ph.volume)
+            if ph.eos is not None:
+                P = float(ph.eos.pressure(NUM, amounts, V, net.T))
+            else:
+                P = math.fsum(10.0 ** float(st["la_eq"][k]) for k in ph.members)
+            x = [a / tot if tot > 0 else 0.0 for a in amounts]
+        else:
+            P = float(ph.pressure)
+            x = [float(t) for t in st["x"][p]]
+            Vm = ph.eos.molar_volume(x, net.T, P) if ph.eos is not None else R_LATM * net.T / P
+            V = Vm * tot if present else 0.0
+        # at an absent fixed-P phase, the coefficients of the composition that would form
+        phi = [1.0] * len(names)
+        if ph.eos is not None and P > 0:
+            phi = [float(math.exp(t)) for t in ph.eos.ln_phi(x, net.T, P)]
+        out[ph.name] = {"present": present, "amount": tot if present else 0.0, "pressure": P, "volume": V,
+                        "molar_volume": V / tot if present and tot > 0 else None,
+                        "mole_fraction": dict(zip(names, x)), "fugacity_coefficient": dict(zip(names, phi)),
+                        "eos": "ideal" if ph.eos is None else "peng-robinson"}
+    return out
+
+
 def _make_result(system, net, act, x, active, ok, info, method) -> Result:
     v, st = _solve.evaluate(net, act, x)
     res = _solve.residuals(net, act, x)
@@ -552,7 +650,8 @@ def _make_result(system, net, act, x, active, ok, info, method) -> Result:
     I_val = float(v["I"]) if v["I"] is not None else ionic_strength(NUM, z, st["m"])
 
     molality, log10_a, gamma, solids, SI = {}, {}, {}, {}, {}
-    gases, pp, exch, surf, mf = {}, {}, {}, {}, {}
+    gases, pp, exch, surf, mf, phi = {}, {}, {}, {}, {}, {}
+    gas_info = _gas_phase_info(net, st, active)
     for s in system.species:
         k = idx.get(s)
         if s.phase == "aqueous":
@@ -577,16 +676,21 @@ def _make_result(system, net, act, x, active, ok, info, method) -> Result:
                 if any(s in g.members for g in system.gas_phases):
                     gases[s.name], pp[s.name], SI[s.name] = 0.0, 0.0, -math.inf
             elif net.kind[k] == "const":
-                pp[s.name] = 10.0 ** net.fixed[k]
+                lp = net.fixed_logphi.get(k, 0.0)
+                pp[s.name], phi[s.name] = 10.0 ** (net.fixed[k] - lp), 10.0**lp
                 SI[s.name] = net.fixed[k]
             else:
                 gases[s.name] = float(n[k])
                 SI[s.name] = float(st["la_eq"][k])
-                ph = net.phases[net.member_phase[k]]
-                if ph.kind == "gas_v" or net.member_phase[k] in active:
-                    pp[s.name] = 10.0 ** SI[s.name]
+                p = net.member_phase[k]
+                ph = net.phases[p]
+                if ph.eos is not None:
+                    d = gas_info[ph.name]
+                    phi[s.name] = d["fugacity_coefficient"][s.name]
+                    pp[s.name] = d["mole_fraction"][s.name] * d["pressure"] if d["present"] else 0.0
                 else:
-                    pp[s.name] = 0.0
+                    phi[s.name] = 1.0
+                    pp[s.name] = 10.0 ** SI[s.name] if (ph.kind == "gas_v" or p in active) else 0.0
         elif s.phase in ("exchange", "surface") and not s.virtual:
             d = exch if s.phase == "exchange" else surf
             d[s.name] = 0.0 if k is None or net.kind[k] == "const" else float(n[k])
@@ -618,7 +722,7 @@ def _make_result(system, net, act, x, active, ok, info, method) -> Result:
     return Result(
         converged=converged, method=method, molality=molality, log10_activity=log10_a, gamma=gamma,
         solids=solids, SI=SI, present=present, ionic_strength=float(I_val), charge_imbalance=float(charge),
-        gibbs_energy=_solve.gibbs_energy(net, x, act), residuals=res,
+        gibbs_energy=_solve.gibbs_energy(net, x, act), residuals=res, fugacity_coefficient=phi, gas_phases=gas_info,
         pruned=[s.name for s in net.pruned], info=info, water_mass=W, pH=pH, pe=pe, gases=gases,
         partial_pressure=pp, exchange=exch, surface=surf, potential=potential, mole_fraction=mf, solid_solutions=ss,
         charge_balance_adjustment=None if v["delta"] is None else float(v["delta"]),

@@ -4,9 +4,10 @@ Supported keyword blocks: ``SOLUTION_MASTER_SPECIES``, ``SOLUTION_SPECIES``,
 ``PHASES``, ``EXCHANGE_MASTER_SPECIES``, ``EXCHANGE_SPECIES``,
 ``SURFACE_MASTER_SPECIES``, ``SURFACE_SPECIES`` and ``PITZER``; other blocks
 (``RATES``, ``MEAN_GAMMAS``, ...) are skipped. Per reaction the parser reads
-``log_k``, ``delta_h`` (with units), ``-analytic`` and ``-gamma``; molar
-volumes, diffusion coefficients and Peng-Robinson parameters are ignored (so
-pressure corrections and non-ideal gases are not modelled).
+``log_k``, ``delta_h`` (with units), ``-analytic`` and ``-gamma``, and per gas
+the Peng-Robinson critical constants ``-T_c``, ``-P_c`` and ``-Omega``, with
+``GAS_BINARY_PARAMETERS``. Molar volumes and diffusion coefficients are ignored
+(so pressure corrections of ``log K`` are not modelled).
 
 Example::
 
@@ -121,6 +122,8 @@ class PhreeqcDatabase:
         self.sit: dict[tuple, float] = {}  # SIT -epsilon: (species, species) -> kg/mol
         self.sit_unsupported: list = []  # temperature-dependent or -epsilon1/-epsilon2 entries (not applied)
         self.named_expressions: dict[str, Entry] = {}
+        #: GAS_BINARY_PARAMETERS: {frozenset((gas_i, gas_j)): k_ij}
+        self.gas_binary_parameters: dict = {}
         self._parse(text)
 
     @classmethod
@@ -200,7 +203,8 @@ class PhreeqcDatabase:
                         current.options["formula"] = _formula
                         self.phases[phase_name] = current
                         phase_name = None
-                    elif _OPTION.match(part) or part.split()[0] in ("log_k", "delta_h", "Vm", "analytic"):
+                    elif _OPTION.match(part) or part.split()[0].lower() in ("log_k", "delta_h", "vm", "analytic",
+                                                                                "t_c", "p_c", "omega"):
                         if current is not None:
                             _option(current, part)
                     else:
@@ -213,6 +217,10 @@ class PhreeqcDatabase:
                 else:
                     current = Entry(part.split()[0], {})
                     self.named_expressions[current.name] = current
+            elif block == "GAS_BINARY_PARAMETERS":
+                t = line.split()
+                if len(t) >= 3 and _is_num(t[2]):
+                    self.gas_binary_parameters[frozenset(t[:2])] = float(t[2])
             elif block == "LLNL_AQUEOUS_MODEL_PARAMETERS":
                 t = line.split()
                 if _OPTION.match(t[0]):
@@ -294,7 +302,7 @@ class PhreeqcDatabase:
         return list(dict.fromkeys(out))
 
     def system(self, components, phases=(), *, exchange=None, surfaces=None, gas_phase=None,
-               solid_solutions=None, activity="auto", T: float = T_REF, name: str = "phreeqc"):
+               solid_solutions=None, activity="auto", T: float = T_REF, name: str = "phreeqc", gas_eos: str = "auto"):
         """Build a :class:`~discopt.speciation.System` with every species the components allow.
 
         Parameters
@@ -311,12 +319,15 @@ class PhreeqcDatabase:
         surfaces : dict, optional
             ``{"Hfo": {"area": 600, "mass": 0.09, "edl": "ddl"}}``.
         gas_phase : dict, optional
-            ``{"members": ["CO2(g)"], "pressure": 1.0}`` or with ``"volume"``.
+            ``{"members": ["CO2(g)"], "pressure": 1.0}`` or with ``"volume"``; optional
+            ``"eos"`` and ``"kij"`` as in :meth:`System.gas_phase`.
         solid_solutions : dict, optional
             ``{"name": [member phases]}`` (ideal) or
             ``{"name": {"members": [...], "guggenheim": [a0, a1]}}`` (or ``"margules"``).
         activity : "auto" or a model spec
             ``"auto"``: Pitzer for a database with a ``PITZER`` block, else Truesdell-Jones.
+        gas_eos : {"auto", "ideal", "peng-robinson"}
+            ``"auto"``: gases with ``-T_c``/``-P_c`` follow Peng-Robinson, as in PHREEQC.
         """
         from discopt.speciation.system import System
 
@@ -324,7 +335,8 @@ class PhreeqcDatabase:
             act = self.default_activity()
         else:
             act = get_activity_model(activity)
-        s = System(name, T=T, activity=act)
+        s = System(name, T=T, activity=act, gas_eos=gas_eos)
+        s.gas_kij = dict(self.gas_binary_parameters)
 
         requested = self.expand(components)
         master_sp = {self.masters[m]["species"] for m in requested}
@@ -443,7 +455,13 @@ class PhreeqcDatabase:
                     missing = sorted(o for o in oth if o not in s)
                     raise ValueError(f"phase {ph!r} needs species {missing} that the components do not provide")
                 continue
-            (s.gas if ent.gas else s.solid)(ph)
+            if ent.gas:
+                sp = s.gas(ph)
+                tc, pc = ent.options.get("t_c"), ent.options.get("p_c")
+                if tc and pc and tc > 0 and pc > 0:
+                    s.critical_constants(sp, tc, pc, ent.options.get("omega") or 0.0)
+            else:
+                s.solid(ph)
             _add_reaction(s, ent)
         if gas_phase:
             gp = dict(gas_phase)

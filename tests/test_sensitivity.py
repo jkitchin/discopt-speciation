@@ -77,7 +77,8 @@ def test_calcite_co2_logK_and_fixed_pressure(db):
 def test_affine_parameters_are_step_independent(db):
     from discopt.speciation.sensitivity import sensitivities
 
-    s = db.system(["Ca", "C(4)"], phases=["Calcite", "CO2(g)"])
+    # an ideal gas: log10 P enters affinely (a Peng-Robinson gas adds log10 phi(P), which is not affine)
+    s = db.system(["Ca", "C(4)"], phases=["Calcite", "CO2(g)"], gas_eos="ideal")
     r = s.equilibrate({"Calcite": 10.0}, fixed={"CO2(g)": -3.5})
     params = [fit.logK(s, "Calcite"), "fixed:CO2(g)"]
     a = sensitivities(r, params, ["pH", "solids:Calcite"], rel_step=1e-5).jacobian

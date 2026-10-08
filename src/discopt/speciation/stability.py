@@ -23,6 +23,9 @@ How the minimum of :math:`D` is bounded:
 
 * pure phases, ideal solid solutions and ideal gas phases: :math:`\min D = \ln 10\,s`
   exactly, with :math:`s` the undersaturation;
+* Peng-Robinson gas phases: :math:`\ln 10\,s` at the stationary composition, on
+  the vapor root. That this is the minimum over compositions and roots (no
+  condensed phase) is listed as an assumption, not proven;
 * non-ideal solid solutions: :math:`D` is non-convex, so its minimum is enclosed
   by interval branch and bound over the simplex, in outward-rounded interval
   arithmetic. Each box uses the better of the natural and the mean-value
@@ -438,6 +441,10 @@ def certify_state(net, act, x, active, *, converged: bool = True, tol: float = T
         f"the computed solution activities (solved to residual {_solve.TOL:g}) are exact",
     ]
     phases, notes = [], []
+    for ph in net.phases:
+        if ph.eos is not None:
+            assumptions.append(f"Peng-Robinson gas phase {ph.name!r}: one vapor phase (largest root), with D "
+                               "minimal at its stationary composition")
     done = set()
     for p, ph in enumerate(net.phases):
         if not ph.complementarity:
@@ -452,7 +459,8 @@ def certify_state(net, act, x, active, *, converged: bool = True, tol: float = T
         if ph.model is None:
             d = LN10 * float(st["s"][p])
             comp = dict(zip(names, (float(v) for v in st["x"][p])))
-            phases.append(PhaseStability(ph.name, ph.kind, present, d, d, comp, "exact", _status(d, d, tol), 0, p))
+            how = "exact" if ph.eos is None else "stationary point (assumed)"
+            phases.append(PhaseStability(ph.name, ph.kind, present, d, d, comp, how, _status(d, d, tol), 0, p))
             continue
         SI = [float(st["la_eq"][k]) for k in ph.members]
         seeds = [np.array([float(v) for v in st["x"][q]]) for q in group]

@@ -58,6 +58,8 @@ class PhaseInfo:
     mpos: list | None = None
     #: index of the phase this one is a second copy of (a miscibility gap), else None
     copy_of: int | None = None
+    #: Peng-Robinson gas phase: the :class:`~discopt.speciation.eos.PengRobinson` model, else None (ideal)
+    eos: object = None
 
     @property
     def complementarity(self) -> bool:
@@ -106,6 +108,9 @@ class Network:
     cb: int | None = None
     cb_col: np.ndarray | None = None
     pruned: list = field(default_factory=list)
+    #: fixed-pressure gases with a Peng-Robinson model: species index -> log10 fugacity coefficient
+    #: (``fixed`` then holds the log10 fugacity)
+    fixed_logphi: dict = field(default_factory=dict)
 
     # -- conveniences ------------------------------------------------------
     @property
@@ -212,13 +217,14 @@ def validate_structure(species: list, reactions: list, fixed=()) -> None:
 
 
 def build_network(species: list, reactions: list, amounts: dict, fixed: dict, T: float, *, P: float = 1.0,
-                  phases=(), surfaces=(), water_mass=None, charge_balance=None, suppress=()) -> Network:
+                  phases=(), surfaces=(), water_mass=None, charge_balance=None, suppress=(), eos=None) -> Network:
     """Assemble arrays, pruning species forced to zero by conservation.
 
     ``amounts`` and ``fixed`` are keyed by :class:`Species`; ``phases`` holds
     :class:`SolidSolution`/:class:`GasPhase` with Species members; ``surfaces``
     holds :class:`SurfaceType`; ``suppress`` lists species to remove (e.g.
-    metastable phases).
+    metastable phases); ``eos`` maps ``id(gas phase)`` to its Peng-Robinson
+    model (absent: ideal).
     """
     suppress = set(suppress)
     species = [s for s in species if s not in suppress]
@@ -253,7 +259,7 @@ def build_network(species: list, reactions: list, amounts: dict, fixed: dict, T:
     rxns = list(reactions)
     pruned: list = []
     while True:
-        net = _assemble(keep, rxns, amounts, fixed, T, P, container, surfaces, water_mass, charge_balance)
+        net = _assemble(keep, rxns, amounts, fixed, T, P, container, surfaces, water_mass, charge_balance, eos or {})
         absent = _forced_zero(net)
         if not absent:
             net.pruned = pruned
@@ -282,7 +288,7 @@ def _kind(s: Species, fixed) -> str:
     return {"exchange": "ex", "surface": "surf", "solid": "member", "gas": "member"}.get(s.phase, "virt")
 
 
-def _assemble(keep, rxns, amounts, fixed, T, P, container, surfaces, water_mass, cb) -> Network:
+def _assemble(keep, rxns, amounts, fixed, T, P, container, surfaces, water_mass, cb, eos) -> Network:
     kinds = {s: _kind(s, fixed) for s in keep}
     order_kind = {"aq": 0, "ex": 1, "surf": 2, "virt": 3}
     yspecies = sorted((s for s in keep if kinds[s] in order_kind), key=lambda s: order_kind[kinds[s]])
@@ -340,7 +346,7 @@ def _assemble(keep, rxns, amounts, fixed, T, P, container, surfaces, water_mass,
             seen[id(ph)] = len(phases)
             if isinstance(ph, GasPhase):
                 kind_ph = "gas_p" if ph.volume is None else "gas_v"
-                phases.append(PhaseInfo(kind_ph, ph.name, [], ph.pressure, ph.volume))
+                phases.append(PhaseInfo(kind_ph, ph.name, [], ph.pressure, ph.volume, eos=eos.get(id(ph))))
             else:
                 phases.append(PhaseInfo("ss", ph.name, []))
         p = seen[id(ph)]
@@ -355,6 +361,11 @@ def _assemble(keep, rxns, amounts, fixed, T, P, container, surfaces, water_mass,
         if not obj.is_ideal:
             info.model = obj
             info.mpos = [order[ordered[k].name] for k in info.members]
+    for obj in {id(ph): ph for ph in container.values()}.values():
+        if id(obj) not in seen or not isinstance(obj, GasPhase) or eos.get(id(obj)) is None:
+            continue
+        info = phases[seen[id(obj)]]
+        info.eos = info.eos.subset([ordered[k].name for k in info.members])  # members pruned from the network drop out
 
     amt = np.zeros(len(cols))
     for j, k in enumerate(cols):
