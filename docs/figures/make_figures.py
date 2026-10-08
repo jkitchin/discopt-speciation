@@ -82,3 +82,38 @@ oxides = {
 fig, ax = plt.subplots(figsize=(6.5, 4.5))
 plot.ellingham(oxides, np.linspace(300, 2000, 60), per={k: 1 for k in oxides}, ax=ax)
 save(fig, "ellingham.png")
+
+# ---------------------------------------------------------------- CO2 solubility at pressure
+# (repeated on the "Gases and pressure" page)
+import json  # noqa: E402
+
+dissolved_c = fit.total("CO2", "HCO3-", "CO3-2", "(CO2)2", weights=[1, 1, 1, 2])
+pressures = np.array([5, 10, 20, 35, 50, 75, 100, 150, 200, 300, 400, 500.0])
+curves = {}
+for tc in (25.0, 50.0, 100.0):
+    for eos in ("auto", "ideal"):  # Peng-Robinson CO2 and H2O(g), or ideal gases
+        c = []
+        for p in pressures:
+            s = db.system(["C(4)"], gas_phase={"members": ["CO2(g)", "H2O(g)"], "pressure": float(p)}, gas_eos=eos)
+            r = s.equilibrate({"CO2(g)": 50.0}, T=273.15 + tc)  # excess CO2; P is the gas phase's
+            c.append(dissolved_c(r) if r.converged else np.nan)
+        curves[tc, eos] = np.array(c)
+
+# PHREEQC's example 22 (fixed-volume gas), from the package's validation data
+ref = json.loads((OUT.parents[1] / "tests" / "data" / "phreeqc_examples.json").read_text())
+ex22 = next(c for c in ref["cases"] if c["id"] == "ex22")["rows"]
+
+fig, ax = plt.subplots(figsize=(6.5, 4.2))
+for tc, color in zip((25.0, 50.0, 100.0), ("C0", "C1", "C3")):
+    ax.plot(pressures, curves[tc, "auto"], color=color, label=f"{tc:g} °C")
+    ax.plot(pressures, curves[tc, "ideal"], color=color, ls=":", lw=1)
+    pts = [(r["P"], r["tot"]["C(4)"]) for r in ex22 if r["state"] == "react" and abs(r["tc"] - tc) < 0.1
+           and r["P"] <= 500 and r["tot"].get("C(4)")]
+    ax.plot(*zip(*pts), "o", color=color, mfc="none", ms=4)
+ax.plot([], [], "k-", label="Peng–Robinson + molar volumes")
+ax.plot([], [], "k:", lw=1, label="ideal gases")
+ax.plot([], [], "ko", mfc="none", ms=4, label="PHREEQC (example 22)")
+ax.set(xlabel="pressure (atm)", ylabel="dissolved CO₂ (mol/kg water)", ylim=(0, 3.2),
+       title="CO₂ solubility in water")
+ax.legend(fontsize=8, ncol=2)
+save(fig, "co2_pressure.png")

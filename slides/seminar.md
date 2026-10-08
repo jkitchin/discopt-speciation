@@ -43,9 +43,10 @@ Department of Chemical Engineering, Carnegie Mellon University
 2. Formulation: complementarity, not least squares
 3. Solving it: homotopy, active sets, three methods
 4. Global stability certificates
-5. Validation against PHREEQC
-6. Beyond forward solves: sensitivities, fitting, design
-7. Using it: Python, YAML, web app, Claude skill
+5. Gases and pressure: Peng–Robinson, log K(P)
+6. Validation against PHREEQC
+7. Beyond forward solves: sensitivities, fitting, design
+8. Using it: Python, YAML, web app, Claude skill
 
 ---
 
@@ -228,6 +229,26 @@ Also: strict YAML/JSON specs, and overrides on top of a database.
 
 ---
 
+## Gases at high pressure
+
+<div class="cols">
+<div>
+
+![width:560px](../docs/figures/co2_pressure.png)
+
+</div>
+<div>
+
+- **Peng–Robinson** fugacities, PHREEQC's constants
+- **log K(P)** from species molar volumes
+- Pressure from the gas phase, as PHREEQC
+- Ideal gases overestimate CO₂ several-fold
+
+</div>
+</div>
+
+---
+
 ## Validation against PHREEQC 3
 
 <div style="font-size: 19px;">
@@ -239,10 +260,12 @@ Also: strict YAML/JSON specs, and overrides on top of a database.
 | Th + CO₂, 25–150 °C | LLNL B-dot / SIT | log a ≤ 1.8e-4 |
 | Calcite + CO₂(g) | phreeqc.dat | pH 1e-7 |
 | Zn on Hfo, DDL | phreeqc.dat | ψ ≤ 1.4e-4 rel |
+| Brine + calcite, gypsum, 100–500 atm | phreeqc.dat / Pitzer | pH ≤ 5e-7 / 2.4e-5 |
+| CO₂ + H₂O(g) to 1461 atm (ex22) | Peng–Robinson | pH ≤ 1.2e-6 |
 
 </div>
 
-227 steps of the PHREEQC example problems, each a test. Known limits are `xfail(strict=True)` with a diagnosis.
+377 steps of the PHREEQC example problems and stress cases, each a test. Known limits are `xfail(strict=True)` with a diagnosis.
 
 ---
 
@@ -359,7 +382,8 @@ discopt-speciation-install-skill
 
 - Complementarity gives answers independent of how chemistry is written
 - Interval certificates prove global stability with solid solutions
-- Validated against PHREEQC across 227 example steps
+- Non-ideal gases and pressure-dependent log K, to 1500 atm
+- Validated against PHREEQC across 377 example steps
 - Sensitivities, fitting with uncertainty, and design come built in
 - Python, YAML, browser, or a conversation
 

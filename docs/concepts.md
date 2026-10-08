@@ -26,7 +26,7 @@ is present iff the sum of partial pressures reaches the total pressure.
 **Fixed-volume gases.** A fixed-volume gas phase always exists, with
 $n_j = P_j V / RT$ for an ideal gas.
 
-**Non-ideal gases.** A gas's activity is its fugacity
+**Non-ideal gases** (overview and an example: [Gases and pressure](gases-and-pressure.md)). A gas's activity is its fugacity
 $f_j = \varphi_j x_j P$, and its $\mathrm{SI}$ is $\log_{10} f_j$. Gases with
 critical constants ($T_c$, $P_c$, $\omega$) follow the
 [Peng–Robinson](references.md#peng1976) equation of state, with PHREEQC's

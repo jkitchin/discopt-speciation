@@ -17,6 +17,7 @@ The equations are solved with discopt's NLP solvers.
 | [Databases](databases.md) | the bundled PHREEQC databases, what is read, choosing components and phases |
 | [Your own data](custom-data.md) | species, reactions, `logK`/`dH`/`analytic`, activity parameters, YAML specs, custom `.dat` files, overriding database values |
 | [Activity models](activity-models.md) | ideal, Davies, Truesdell-Jones, B-dot, LLNL, SIT, Pitzer: parameters and validity |
+| [Gases and pressure](gases-and-pressure.md) | Peng–Robinson gases, pressure-dependent `log K` from molar volumes, which pressure is used; CO₂ solubility to 500 atm |
 | [Stability](stability.md) | non-ideal solid solutions, miscibility gaps, certificates of global stability |
 | [Fitting](fitting.md) | estimating `logK`, `dH` and activity parameters from measurements, with confidence intervals; exact implicit-function sensitivities |
 | [Optimization](optimization.md) | choosing inputs to reach an equilibrium target, and guaranteed worst-case bounds over uncertain `logK` |
