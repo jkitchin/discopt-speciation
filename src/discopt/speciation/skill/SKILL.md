@@ -180,6 +180,15 @@ phases can form.
   so that element is not conserved.
 - **Gases.** A gas must be listed in `phases=`, or in `gas_phase=` for a
   closed gas phase, before it can be fixed.
+- **Non-ideal gases.** Database gases with `-T_c`/`-P_c` (CO2, CH4, N2, H2O,
+  H2S, O2, H2, NH3 in phreeqc.dat) follow Peng-Robinson, as in PHREEQC. A
+  fixed `log10 P` then means fugacity φP, and `r.SI` of a gas is log10
+  fugacity; `r.partial_pressure`, `r.fugacity_coefficient` and
+  `r.gas_phases` report the rest. φ matters above ~10 atm (CO2: 0.95 at
+  10 atm, 0.74 at 50 atm). Give other gases constants with
+  `s.critical_constants(name, Tc=K, Pc=atm, omega=...)`; `gas_eos="ideal"`
+  turns it off. log K has no pressure dependence yet, so results at tens of
+  atm and above are still approximate.
 - **Declare every species.** With `System`, every key in `amounts` must be a
   declared species, including spectators such as `Na+`.
 - **Fixed pH.** Fixing pH makes H+ an open reservoir. Use `charge_balance=`

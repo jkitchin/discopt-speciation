@@ -72,7 +72,7 @@ polymorphs are excluded automatically.
      `max_boxes` with `stability_certificate(r, max_boxes=...)`.
 6. **Disagreement with PHREEQC.** Known sources are:
    - water gram-formula weight conventions;
-   - PHREEQC's Peng-Robinson gases, where this package uses ideal gases;
+   - gases treated as ideal on one side only (`gas_eos="ideal"`, or a gas without critical constants), while the other uses Peng-Robinson;
    - pressure effects on log K at high pressure;
    - Pitzer MacInnes scaling in chloride-free brines;
    - a PHREEQC input that removes water.

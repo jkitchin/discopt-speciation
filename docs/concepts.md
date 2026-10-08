@@ -24,7 +24,26 @@ A solid solution is present iff $\sum_j 10^{\mathrm{SI}_j} \ge 1$. A gas phase
 is present iff the sum of partial pressures reaches the total pressure.
 
 **Fixed-volume gases.** A fixed-volume gas phase always exists, with
-$n_j = P_j V / RT$.
+$n_j = P_j V / RT$ for an ideal gas.
+
+**Non-ideal gases.** A gas's activity is its fugacity
+$f_j = \varphi_j x_j P$, and its $\mathrm{SI}$ is $\log_{10} f_j$. Gases with
+critical constants ($T_c$, $P_c$, $\omega$) follow the
+[Peng–Robinson](references.md#peng1976) equation of state, with PHREEQC's
+constants and mixing rule. The database gases get them from `-T_c`, `-P_c`
+and `-Omega`; see [custom data](custom-data.md#gases-with-critical-constants)
+for your own.
+- **Fixed pressure:** the phase is present iff
+  $\sum_j f_j/\varphi_j(x) = P$ can be met. The composition, the molar volume (the
+  vapor root) and the undersaturation are solved with the rest of the state.
+- **Fixed volume:** the amounts solve $f_j(n, V) = 10^{\mathrm{SI}_j}$, and the
+  pressure follows.
+- **Fixed partial pressure** (`fixed={"CO2(g)": 1.7}`): the value is $\log_{10} P$,
+  and the fugacity is $\varphi(T, P)\,P$ of the pure gas, as in PHREEQC's
+  `EQUILIBRIUM_PHASES`.
+- `System(gas_eos="ideal")`, or `eos="ideal"` on a gas phase, turns this off.
+  `Result.fugacity_coefficient` and `Result.gas_phases` report $\varphi$,
+  pressure, volume and composition.
 
 **Open systems.** A fixed activity or partial pressure (`fixed={"CO2(g)": -3.5}`,
 `pH=7`, `pe=4`) removes that species from the conservation laws.
@@ -114,5 +133,5 @@ See `Result.sensitivity` and [fitting](fitting.md#sensitivities).
 | `dCp` | J/mol/K |
 | `dV` | cm³/mol |
 | `logK` | base 10, at 25 °C, for the reaction as written (products over reactants) |
-| `SI` | $\log_{10}(Q/K)$ per formula unit as written |
+| `SI` | $\log_{10}(Q/K)$ per formula unit as written; for a gas, $\log_{10}$ of its fugacity (atm) |
 | `pe` | $-\log_{10} a_{e^-}$; $E_h = pe \cdot RT\ln 10/F$ |

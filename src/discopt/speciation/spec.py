@@ -144,6 +144,10 @@ class GasPhaseSpec(_Strict):
     pressure: Optional[float] = 1.0
     volume: Optional[float] = None
     name: str = "gas"
+    eos: Optional[Literal["auto", "ideal", "peng-robinson"]] = Field(
+        default=None, description="default: the system's gas_eos")
+    kij: Optional[list[tuple[str, str, float]]] = Field(
+        default=None, description="Peng-Robinson binary parameters [[gas_i, gas_j, k], ...]")
 
 
 class DatabaseSpec(_Strict):
@@ -173,6 +177,8 @@ class ProblemSpec(_Strict):
 class SystemSpec(_Strict):
     name: str = "system"
     temperature: float = T_REF
+    gas_eos: Literal["auto", "ideal", "peng-robinson"] = Field(
+        default="auto", description="auto: Peng-Robinson for gases with critical constants (params Tc, Pc, omega)")
     activity: Optional[ActivitySpec] = Field(default=None, description="default: ideal (database systems: auto)")
     database: Optional[DatabaseSpec] = None
     species: list[SpeciesSpec] = Field(default_factory=list)
@@ -212,9 +218,10 @@ def system_from_spec(spec) -> "System":
         s = PhreeqcDatabase.load(d.file).system(
             d.components, d.phases, exchange=d.exchange, surfaces=d.surfaces, gas_phase=d.gas_phase,
             solid_solutions=d.solid_solutions, activity="auto" if spec.activity is None else _activity(spec.activity),
-            T=spec.temperature, name=spec.name)
+            T=spec.temperature, name=spec.name, gas_eos=spec.gas_eos)
     else:
-        s = System(spec.name, T=spec.temperature, activity="ideal" if spec.activity is None else _activity(spec.activity))
+        s = System(spec.name, T=spec.temperature, activity="ideal" if spec.activity is None else _activity(spec.activity),
+                   gas_eos=spec.gas_eos)
     for ex in spec.exchange_sites:
         s.exchange_site(ex.name, ex.charge)
     for st in spec.surfaces:
@@ -226,7 +233,10 @@ def system_from_spec(spec) -> "System":
         elif sp.phase == "solid":
             s.solid(sp.name)
         elif sp.phase == "gas":
-            s.gas(sp.name)
+            g = s.gas(sp.name)
+            g.params.update(p)
+            if "Tc" in p or "Pc" in p:
+                s.critical_constants(g, p.get("Tc"), p.get("Pc"), p.get("omega", 0.0))
         elif sp.phase == "solvent":
             s.solvent(sp.name)
         elif sp.phase == "electron":
@@ -256,7 +266,7 @@ def system_from_spec(spec) -> "System":
     for ss in spec.solid_solutions:
         s.solid_solution(ss.name, ss.members, guggenheim=ss.guggenheim, margules=ss.margules)
     for gp in spec.gas_phases:
-        s.gas_phase(gp.members, gp.pressure, gp.volume, gp.name)
+        s.gas_phase(gp.members, gp.pressure, gp.volume, gp.name, eos=gp.eos, kij=gp.kij)
     s.masters.update(spec.masters)
     s.validate()
     return s
@@ -276,7 +286,7 @@ def system_to_spec(system) -> dict:
             for k in ("a0", "b"):
                 if k in params:
                     d[k] = params.pop(k)
-        if params and sp.phase == "aqueous":
+        if params and sp.phase in ("aqueous", "gas"):
             d["params"] = params
         if sp.phase in ("exchange", "surface"):
             d["site"] = sp.site
@@ -300,6 +310,8 @@ def system_to_spec(system) -> dict:
         "name": system.name, "temperature": system.T, "activity": system.activity.to_spec(),
         "species": species, "reactions": reactions,
     }
+    if system.gas_eos != "auto":
+        spec["gas_eos"] = system.gas_eos
     if system.exchange_sites:
         spec["exchange_sites"] = [{"name": k, "charge": v.charge} for k, v in system.exchange_sites.items()]
     if system.surface_types:
@@ -308,8 +320,14 @@ def system_to_spec(system) -> dict:
     if system.solid_solutions:
         spec["solid_solutions"] = [ss.to_spec() for ss in system.solid_solutions]
     if system.gas_phases:
-        spec["gas_phases"] = [{"members": [m.name for m in g.members], "pressure": g.pressure, "volume": g.volume,
-                               "name": g.name} for g in system.gas_phases]
+        spec["gas_phases"] = []
+        for g in system.gas_phases:
+            d = g.to_spec()
+            kij = {pair: k for pair, k in system.gas_kij.items() if pair <= {m.name for m in g.members}}
+            if kij:  # database GAS_BINARY_PARAMETERS, made explicit (the phase's own kij win)
+                own = {frozenset(t[:2]) for t in d.get("kij", [])}
+                d["kij"] = d.get("kij", []) + [sorted(p) + [k] for p, k in kij.items() if p not in own]
+            spec["gas_phases"].append(d)
     if system.masters:
         spec["masters"] = {k: getattr(v, "name", v) for k, v in system.masters.items()}
     SystemSpec.model_validate(spec)

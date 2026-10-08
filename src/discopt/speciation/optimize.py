@@ -617,6 +617,9 @@ class _Problem:
         self.L = S.layout(self.net, self.act)
         if self.L.X:
             raise NotImplementedError("non-ideal solid solutions are not supported by discopt.speciation.optimize")
+        if self.L.G:
+            raise NotImplementedError("Peng-Robinson gas phases are not supported by discopt.speciation.optimize; "
+                                      "use gas_eos='ideal' (System) or eos='ideal' (gas phase)")
         net = self.net
         self.idx = {s.name: k for k, s in enumerate(net.species)}
         cpos = {k: j for j, k in enumerate(net.cols)}
@@ -640,6 +643,9 @@ class _Problem:
                 k = self.idx.get(system._resolve(name).name)
                 if k is None or k not in net.fixed:
                     raise ValueError(f"parameter {p.label!r}: {name} is not a fixed-activity species of the network")
+                if k in net.fixed_logphi:
+                    raise NotImplementedError(f"parameter {p.label!r}: {name} is a Peng-Robinson gas, whose fugacity "
+                                              "is not linear in log10 P; use gas_eos='ideal'")
                 p.species = net.species[k].name
             elif p.kind == "logK":
                 if not any(rx.reaction is p.reaction for rx in list(net.rxns) + list(net.member_rxn.values())):

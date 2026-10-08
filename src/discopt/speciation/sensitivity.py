@@ -296,7 +296,7 @@ def _stencil(spec: _Spec, ev, f0=None):
     if v0 - H >= spec.lower:
         try:
             dH = (np.asarray(ev(v0 + H), float) - np.asarray(ev(v0 - H), float)) / (2.0 * H)
-        except (_StructureChanged, ValueError, OverflowError, ZeroDivisionError):
+        except (_StructureChanged, ValueError, ArithmeticError):  # e.g. no Peng-Robinson root at 10**H atm
             dH = None
         if dH is not None and np.all(np.abs(dH - d2) <= 1e-7 * np.abs(dH) + 1e-9 * np.max(np.abs(fp - fm)) / h + 1e-300):
             return dH, True

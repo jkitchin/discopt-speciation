@@ -16,13 +16,17 @@ checked by [`tests/test_phreeqc.py`](https://github.com/jkitchin/discopt-speciat
 | Zn on Hfo, diffuse double layer | phreeqc.dat | ψ, surface species | ≤ 1.4e-4 rel |
 | Fe(II)/Fe(III) at pe 10 | phreeqc.dat | log a | ≤ 3e-6 |
 | Calcite + CO₂(g) at 10⁻³·⁵ atm | phreeqc.dat | pH, I, water mass | 1e-7, 1e-6, 1e-9 rel |
-| Na–CO₂ solution with a 1 L gas volume | phreeqc.dat | pH, n(CO₂(g)) | 7e-6 rel, 1e-4 rel |
+| Na–CO₂ solution with a 1 L gas volume | phreeqc.dat, Peng–Robinson | pH, n(CO₂(g)) | 1.2e-6 rel, 1.4e-5 rel |
+| Pure CO₂ and CH₄, CO₂–CH₄–N₂–H₂O mixtures, 1–200 atm, 25–100 °C (39 states) | phreeqc.dat, Peng–Robinson | φ, molar volume, P | φ ≤ 4e-8 (fixed P), ≤ 3.5e-6 (fixed V); V_m, P ≤ 3e-5 rel |
 | [MINTEQ](references.md#allison1991) benchmark systems | ideal/Davies | full speciation | see [`test_minteq.py`](https://github.com/jkitchin/discopt-speciation/blob/main/tests/test_minteq.py) |
 | [Torres](references.md#laliwala2025) mass-action examples | ideal | solids, SI, invariance | see notebook 02 |
 
 **Remaining differences.**
-- **Gas volume case:** PHREEQC corrects the gas phase with molar volumes and
-  Peng–Robinson, which are not read here.
+- **Gas cases:** the remaining 3e-5 relative difference in molar volume and
+  pressure is the gas constant: PHREEQC uses 0.0820597 L atm/(mol K), the package
+  $R/101.325 = 0.0820574$. The Peng–Robinson states are checked in
+  [`tests/test_peng_robinson.py`](https://github.com/jkitchin/discopt-speciation/blob/main/tests/test_peng_robinson.py),
+  against PHREEQC's own `PR_PHI`, `PR_P` and `GAS_VM`.
 - **Surface case:** the difference in ψ is at the level of physical constants
   and PHREEQC's convergence tolerance.
 - **llnl.dat and sit.dat cases:** the largest differences are for highly
@@ -76,11 +80,11 @@ The validation notebook also shows:
 | ex6 K-feldspar path, 14 of 20 steps | pH, log a, SI, phases | log a 3.3e-7, SI 1.2e-7 | pass |
 | ex6 A1, A5, B 0.04/0.08/1/4 µmol | as above | pH 2, SI 28 (not converged) | **xfail**: non-convergence |
 | ex7 solution 1 + fixed-P gas at 1–3 mmol (no gas forms) | pH, pe, log a, SI | log a 2e-4 (N₂), pe 4.2e-5 | pass |
-| ex7 fixed-P ≥ 4 mmol and fixed-V gas (21 steps) | gas moles, pH, log a | gas 1.7e-2 rel, log a 8.7e-3 | **xfail**: Peng–Robinson |
+| ex7 fixed-P ≥ 4 mmol and fixed-V gas, Peng–Robinson (21 steps) | gas moles, pH, log a | gas 3.3e-6 mol (6.9e-4 rel), log a 1.6e-4 | pass |
 | ex7 with ideal gases in PHREEQC (25 steps) | as above | gas 2.5e-7 mol (7e-4 rel), log a 2e-4 | pass |
 | ex8 Zn on Hfo, DDL (26 steps) | surface species, ψ, Zn²⁺ | surface 1.3e-4 rel, ψ 4.7e-5 rel | pass |
 | ex10 aragonite–strontianite SS, ideal (8 steps) | SS moles, SI, log a | log a 1.5e-5 | pass |
-| ex10 solution 1 (aragonite + CO₂(g)) | pH, log a | pH 1.5e-3, log a 4.7e-3 | **xfail**: Peng–Robinson |
+| ex10 solution 1 (aragonite + CO₂(g), φ = 0.9945) | pH, log a | pH 1.3e-6, log a 2.5e-6 | pass |
 | ex10 with ideal gases in PHREEQC (9 steps) | as above | log a 1.5e-5 | pass |
 | ex11 exchange, one mixing cell | exchange species, log a | NaX 3e-12 rel | pass |
 | ex14 brine (I 6.9) + carbonates, + As surface | pH, surface, ψ, phases | log a 1.9e-5, ψ 1.7e-5 rel | pass |
@@ -123,29 +127,26 @@ Each item below is marked `xfail(strict=True)` in the tests. The repro inputs ar
 2. **Water gfw.** PHREEQC takes the gram-formula weight of water from the database, 18.016 in phreeqc.dat and [pitzer.dat](https://github.com/jkitchin/discopt-speciation/blob/main/src/discopt/speciation/data/pitzer.dat). The package uses 18.01528.
    - **Effect:** removing *N* mol of water leaves a different mass. For ex4 the water mass differs by 7.6e-4 rel. The equal-mass steps agree.
    - **Status:** a convention difference. It is documented here, not a bug.
-3. **Peng–Robinson gases.** phreeqc.dat gives CO₂(g), CH₄(g), N₂(g) and H₂O(g) critical constants, so PHREEQC corrects gas phases with Peng–Robinson. The package gas phase is ideal.
-   - **Effect:** 1–2 % in gas moles in ex7. It also shows in ex10's solution 1, where PHREEQC applies the fugacity coefficient to CO₂(g) in `EQUILIBRIUM_PHASES`.
-   - **Check:** rerunning PHREEQC with the gases redefined without critical constants agrees within tolerance.
-4. **No pressure dependence of log K.** For 0.5 m NaCl with Ca, C(4) and S(6) at 25 °C and 200 atm, the package gives pH 4.3144 and PHREEQC 4.2633. The two agree at 1 atm.
+3. **No pressure dependence of log K.** For 0.5 m NaCl with Ca, C(4) and S(6) at 25 °C and 200 atm, the package gives pH 4.3144 and PHREEQC 4.2633. The two agree at 1 atm.
    - **Above 100 °C:** PHREEQC works at the saturation pressure (15.3 atm at 200 °C), which gives pH deviations of 3–5e-3.
-5. **ex6 non-convergence.** With the four K–Al–Si phases, small K-feldspar additions fail to converge. In a scan, 1e-8, 2e-8, 4e-8, 8e-8, 1e-6 and 4e-6 mol fail, and 1.6e-7 and 1e-5 mol converge.
+4. **ex6 non-convergence.** With the four K–Al–Si phases, small K-feldspar additions fail to converge. In a scan, 1e-8, 2e-8, 4e-8, 8e-8, 1e-6 and 4e-6 mol fail, and 1.6e-7 and 1e-5 mol converge.
    - **At 2.658e-8 mol:** pH 6.68 against PHREEQC's 7.0037, where Gibbsite should be at SI 0. The complementarity residual is about 1.
    - **Nearby points converge:** 1.6e-7 and 1e-5 mol both converge.
-6. **Silent NaN for 1e-30 m traces.** At fixed pH the result has NaN molalities and `pH=None`, yet reports `converged=True` with zero residuals. Re-equilibrating the same solution returns `converged=False`, with a balance residual of 1.
-7. **Surface start point.** The system is phreeqc.dat Na/Cl/Zn with Hfo (area 600 m²/g, mass 9 g) and amounts {Na⁺ 1e-4, Cl⁻ 1e-4, Zn²⁺ 1e-6, Hfo_w 0.02, Hfo_s 5e-4}.
+5. **Silent NaN for 1e-30 m traces.** At fixed pH the result has NaN molalities and `pH=None`, yet reports `converged=True` with zero residuals. Re-equilibrating the same solution returns `converged=False`, with a balance residual of 1.
+6. **Surface start point.** The system is phreeqc.dat Na/Cl/Zn with Hfo (area 600 m²/g, mass 9 g) and amounts {Na⁺ 1e-4, Cl⁻ 1e-4, Zn²⁺ 1e-6, Hfo_w 0.02, Hfo_s 5e-4}.
    - **Without H⁺:** it converges and matches PHREEQC (pH 8.0678 against 8.0679).
    - **With 1e-7 mol H⁺ added:** it ends at `converged=False`, with Hfo_sOH at 5e-198.
-8. **MacInnes scaling without Cl⁻.** The package rescales individual-ion activity coefficients to KCl only when Cl⁻ is present. PHREEQC always rescales.
+7. **MacInnes scaling without Cl⁻.** The package rescales individual-ion activity coefficients to KCl only when Cl⁻ is present. PHREEQC always rescales.
    - **Effect in 2.5 m MgSO₄:** log γ(Mg²⁺) is off by −0.895 and log γ(SO₄²⁻) by +0.895, so the charge-balanced pH is off by 0.45.
    - **What still agrees:** neutral combinations and a_w. With 1 mM NaCl added, everything agrees within tolerance.
-9. **Pitzer water activity of a non-electroneutral solution.**
+8. **Pitzer water activity of a non-electroneutral solution.**
    - **Where it shows:** the Black Sea analysis in the evaporite case carries a 2.36 meq charge imbalance, which evaporation concentrates to 0.13–0.27 eq/kgw. From there log a_w differs by 6e-4 to 3.8e-3, and minerals near saturation shift with it (SI Epsomite up to 0.026).
    - **Isolated:** the same brine at fixed pH is off by 1.1e-3 as given, but agrees to 1.6e-5 once Na makes it electroneutral. Every Na–Cl–X subsystem at those concentrations agrees to 2e-6.
    - **Likely cause:** the package takes a_w from the derivative of the excess Gibbs energy, while PHREEQC sums its osmotic coefficient. The two coincide only when Σ z m = 0.
-10. **Performance and convergence of the concentrated Pitzer brine.**
-    - **Runtime:** the evaporite steps at 54.876 and 55.026 mol removed take 180–380 s each. The Pitzer temperature extremes take 15–19 s.
-    - **Non-convergence:** removing a literal 55.026 mol of water ends at `converged=False` after 600 s. The equal-mass step converges.
-    - **Slow-set total:** 25 min, almost all in these four steps.
+9. **Performance and convergence of the concentrated Pitzer brine.**
+   - **Runtime:** the evaporite steps at 54.876 and 55.026 mol removed take 180–380 s each. The Pitzer temperature extremes take 15–19 s.
+   - **Non-convergence:** removing a literal 55.026 mol of water ends at `converged=False` after 600 s. The equal-mass step converges.
+   - **Slow-set total:** 25 min, almost all in these four steps.
 
 pe is not compared for [llnl.dat](https://github.com/jkitchin/discopt-speciation/blob/main/src/discopt/speciation/data/llnl.dat) and [sit.dat](https://github.com/jkitchin/discopt-speciation/blob/main/src/discopt/speciation/data/sit.dat) at 0.01 °C, or for sit.dat at 100 °C. These solutions contain no redox couple, and PHREEQC's pe there comes from H(0) ≈ 1e-14 m, a species that is not in the package system.
 
@@ -158,7 +159,7 @@ pe is not compared for [llnl.dat](https://github.com/jkitchin/discopt-speciation
 | ex11 (column), ex12, ex13, ex15, ex21 | 1-D advective / diffusive / dual-porosity transport, heat transport, multicomponent diffusion; only ex11's single mixing cell is compared |
 | ex16, ex17, ex18 | inverse modeling (`INVERSE_MODELING`); ex17's evaporation of Black Sea water is used forward as a Pitzer stress case |
 | ex20 | isotope distribution ([`iso.dat`](https://github.com/usgs-coupled/phreeqc3/blob/master/database/iso.dat), isotope ratios) |
-| ex22 | CO₂ and H₂S solubility at high pressure: needs Peng–Robinson and pressure-dependent log K (items 3 and 4) |
+| ex22 | CO₂ and H₂S solubility at high pressure: needs pressure-dependent log K (item 3) |
 | ex10, non-ideal part | Guggenheim a₀/a₁ solid solution is not supported; the ideal solid solution is compared |
 | ex19, linear and Freundlich isotherms | 1e100 sites with log K −100.7/−102.6 and a non-integer (0.722) sorption stoichiometry are not representable |
 | ex1, redox couples in the initial solution | PHREEQC distributes Fe, Mn, U and N with separate couples; the package has one pe per solution (the re-equilibrated state is compared) |

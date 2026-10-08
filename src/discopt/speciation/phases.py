@@ -15,9 +15,15 @@ member ``j`` computed as if it were pure (``log10`` partial pressure for gases),
   present iff ``s = 0``. These are the stationarity conditions of the tangent
   plane distance, so several solutions (a miscibility gap) are possible; see
   :mod:`discopt.speciation.certify`;
-* a gas phase at total pressure ``P`` is present iff :math:`\\sum_j 10^{SI_j} \\ge P`,
+* an ideal gas phase at total pressure ``P`` is present iff :math:`\\sum_j 10^{SI_j} \\ge P`,
   and then :math:`P_j = 10^{SI_j}`;
-* a fixed-volume gas phase always exists with :math:`n_j = P_j V / RT`.
+* an ideal fixed-volume gas phase always exists with :math:`n_j = P_j V / RT`;
+* a Peng-Robinson gas phase replaces partial pressures by fugacities
+  :math:`f_j = \\varphi_j x_j P = 10^{SI_j}` (see :mod:`discopt.speciation.eos`):
+  at fixed ``P`` its composition and undersaturation ``s`` solve
+  :math:`\\log_{10} f_j(x, V_m) = SI_j + s`, :math:`\\sum_j x_j = 1`,
+  :math:`P(x, V_m) = P`, and it is present iff ``s = 0``; at fixed ``V`` the
+  amounts solve :math:`\\log_{10} f_j(n, V) = SI_j`.
 
 Pure phases are the one-member special case of the solid solution rule.
 """
@@ -142,22 +148,42 @@ def _finite(v) -> bool:
 
 @dataclass
 class GasPhase:
-    """Ideal gas phase; give ``pressure`` (atm, fixed total pressure) or ``volume`` (L, fixed volume)."""
+    """Gas phase; give ``pressure`` (atm, fixed total pressure) or ``volume`` (L, fixed volume).
+
+    ``eos`` is ``"ideal"``, ``"peng-robinson"`` or ``None`` (the system's
+    ``gas_eos``, by default ``"auto"``: Peng-Robinson when every member has
+    critical constants). ``kij`` gives Peng-Robinson binary interaction
+    parameters, ``{(gas_i, gas_j): k}`` or ``[[gas_i, gas_j, k], ...]``; pairs it
+    does not give use the database's ``GAS_BINARY_PARAMETERS`` and then PHREEQC's
+    defaults (:data:`discopt.speciation.eos.DEFAULT_KIJ`).
+    """
 
     members: list
     pressure: float | None = 1.0
     volume: float | None = None
     name: str = "gas"
+    eos: str | None = None
+    kij: dict | list | None = None
 
     def __post_init__(self):
         if self.volume is not None:
             self.pressure = None
         if (self.pressure is None) == (self.volume is None):
             raise ValueError("gas phase needs exactly one of pressure (atm) or volume (L)")
+        if self.eos is not None:
+            from discopt.speciation.eos import check_eos
+
+            self.eos = check_eos(self.eos)
 
     def to_spec(self) -> dict:
         d = {"name": self.name, "members": [getattr(m, "name", m) for m in self.members]}
         d.update({"pressure": self.pressure} if self.volume is None else {"volume": self.volume})
+        if self.eos is not None:
+            d["eos"] = self.eos
+        if self.kij:
+            from discopt.speciation.eos import normalize_kij
+
+            d["kij"] = [sorted(pair) + [k] for pair, k in normalize_kij(self.kij).items()]
         return d
 
 

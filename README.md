@@ -35,7 +35,8 @@ which inert or metastable phases are listed.
   - pure solids, with metastable polymorphs correctly excluded, or kept via
     `suppress=`
   - ideal solid solutions
-  - gas phases at fixed pressure or volume
+  - gas phases at fixed pressure or volume, ideal or Peng–Robinson (with
+    PHREEQC's critical constants, or your own)
   - fixed partial pressures and activities (pH, pe)
 - **Surfaces and exchange.** Gaines–Thomas ion exchange; diffuse double layer
   surface complexation.
