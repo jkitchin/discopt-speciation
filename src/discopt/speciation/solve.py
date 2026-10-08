@@ -41,6 +41,7 @@ layer); the charge-balance adjustment ``delta`` (mol).
 
 from __future__ import annotations
 
+import dataclasses
 import itertools
 import math
 import warnings
@@ -54,7 +55,8 @@ from discopt.solvers.nlp_backend import get_nlp_solver
 
 from discopt.speciation import water as WP
 from discopt.speciation.activity import EXPR, NUM, ActivityModel, Ideal, _is_zero, ionic_strength, truesdell_jones_ln_gamma
-from discopt.speciation.eos import R_LATM
+from discopt.speciation.eos import R_LATM, IdealBlend
+from discopt.speciation.volume import ionic_terms
 from discopt.speciation.network import Network
 from discopt.speciation.species import ATM_BAR
 
@@ -68,6 +70,7 @@ DEFAULT_EPS = (1e-1, 1e-2, 1e-3, 1e-4, 1e-6, 1e-8, 1e-10)
 NLP_OPTIONS = {"tol": 1e-12, "max_iter": 3000, "print_level": 0}
 TOL = 1e-8  # residual tolerance (scaled balances, log10 mass action, complementarity)
 METHODS = ("complementarity", "gibbs", "enumerate")
+GAS_CONTINUATION = (0.2, 0.4, 0.6, 0.8)  # ideal -> Peng-Robinson steps for fixed-volume gases
 
 
 @dataclass
@@ -128,7 +131,16 @@ def _gas_block(ph) -> int:
 
 def _needs_I(net, act) -> bool:
     charged = any(net.species[k].charge for k in net.aq_idx)
-    return charged and (act.uses_I or bool(net.surfaces))
+    return charged and (act.uses_I or bool(net.surfaces) or net.logK_I)
+
+
+def _logK(o, rx, I):
+    """log K of ``rx`` at ionic strength ``I``: constant, or with the molar-volume terms above 1 atm."""
+    if not rx.vterms:
+        return rx.logK
+    if isinstance(I, (int, float)) and I <= 0.0:
+        return rx.logK
+    return rx.logK + ionic_terms(o, rx.vterms, I)
 
 
 def _prepare(net, act):
@@ -171,7 +183,7 @@ def state(o, net: Network, act: ActivityModel, ctx, v: dict) -> dict:
     m = [10.0 ** y[ypos[k]] for k in aq]
     I = v["I"]
     if I is None:
-        I = ionic_strength(o, ctx.z, m) if (act.uses_I or net.surfaces) and np.any(ctx.z) else 0.0
+        I = ionic_strength(o, ctx.z, m) if (act.uses_I or net.surfaces or net.logK_I) and np.any(ctx.z) else 0.0
     lng = act.ln_gamma(o, ctx, m, I)
     surf_of = {k: q for q, S in enumerate(net.surfaces) for k in S.members}
     coef_psi = WP.FARADAY / (WP.R_GAS * net.T * LN10)
@@ -207,7 +219,7 @@ def state(o, net: Network, act: ActivityModel, ctx, v: dict) -> dict:
     la_eq = {}
     for k, rx in net.member_rxn.items():
         rest = [c * la[i] for i, c in rx.nu.items() if i != k]
-        la_eq[k] = (rx.logK - o.sum(rest)) * (1.0 / rx.nu[k])
+        la_eq[k] = (_logK(o, rx, I) - o.sum(rest)) * (1.0 / rx.nu[k])
     nph_ = len(net.phases)
     s_ph, sig_ph, x_ph, nph = [None] * nph_, [None] * nph_, [None] * nph_, [None] * nph_
     for p, ph in enumerate(net.phases):
@@ -271,7 +283,8 @@ def equations(o, net, act, ctx, v, st) -> list:
         out.append((f"conservation_{r}", (o.sum(terms) - float(net.b[r])) * (1.0 / float(net.row_scale[r])), "balance"))
     la = st["la"]
     for j, rx in enumerate(net.rxns):
-        out.append((f"mass_action_{j}", o.sum([c * la[k] for k, c in rx.nu.items()]) - rx.logK, "mass_action"))
+        out.append((f"mass_action_{j}", o.sum([c * la[k] for k, c in rx.nu.items()]) - _logK(o, rx, st["I"]),
+                    "mass_action"))
     for k, val in net.fixed.items():
         if net.kind[k] != "const":
             out.append((f"fixed_{net.species[k].name}", la[k] - val, "mass_action"))
@@ -400,8 +413,8 @@ def _gas_bounds(net, ph):
         # V_m above every b keeps V_m - b_mix > 0; the vapor root has Z = P V_m / RT well below 10
         vlo, vhi = math.log10(1.0001 * float(max(b))), math.log10(10.0 * R_LATM * net.T / ph.pressure)
         return [LOG_LB] * nm + [-S_B, vlo], [0.0] * nm + [S_B, max(vhi, vlo + 1.0)]
-    # sum_j n_j b_j < V
-    return [LOG_LB] * nm, [math.log10(0.99 * ph.volume / (nm * float(max(b))))] * nm
+    # each member alone below the close-packed limit n_j b_j < V (the sum is kept below V by the fugacity terms)
+    return [LOG_LB] * nm, [math.log10(0.99 * ph.volume / float(bj)) for bj in b]
 
 
 def _eliminate(A, b, col):
@@ -584,6 +597,11 @@ def build_model(net: Network, act: ActivityModel, mode: str, active=frozenset())
     st = state(EXPR, net, act, ctx, v)
     for name, expr, _ in equations(EXPR, net, act, ctx, v, st):
         m.subject_to(expr == 0, name=name)
+    for p, ph in enumerate(net.phases):
+        if ph.kind == "gas_v" and ph.eos is not None:
+            # excludes liquid-like roots under tension (H2O(g) at its own vapor pressure has one at P < 0)
+            m.subject_to(ph.eos.pressure(EXPR, st["nph"][p], float(ph.volume), net.T) >= 0.0,
+                         name=f"gas_{ph.name}_pressure")
     for p in L.Nph:
         Np, s = v["N"][p], st["s"][p]
         label = net.phases[p].name
@@ -766,8 +784,55 @@ def _seed_gases(net, act, x) -> np.ndarray:
 
 
 # --------------------------------------------------------------------------- stages
+def _ideal_gas_start(net, act, options, info) -> np.ndarray:
+    """Start for Peng-Robinson fixed-volume gases: the speciation with those gases ideal, then their amounts.
+
+    A fixed-volume gas has a liquid-like root as well as the vapor one (for H2O(g)
+    below 374 C, at its own vapor pressure). The ideal-gas solution is unique, and
+    successive substitution from its amounts (:func:`_seed_gases`) climbs to the
+    first, vapor-side root, as PHREEQC's iteration from the ideal gas does.
+    """
+    ideal = dataclasses.replace(net, phases=[dataclasses.replace(ph, eos=None) if ph.kind == "gas_v" else ph
+                                             for ph in net.phases])
+    xi = solve_speciation(ideal, act, options, info)
+    Li, L = layout(ideal, act), layout(net, act)
+    x = initial_point(net, act)
+    n0 = Li.ny + len(Li.Nph)
+    x[:n0] = xi[:n0]
+    for p, a in Li.X.items():
+        k = len(net.phases[p].members) + 1
+        x[L.X[p] : L.X[p] + k] = xi[a : a + k]
+    for p, a in Li.G.items():
+        k = _gas_block(net.phases[p])
+        x[L.G[p] : L.G[p] + k] = xi[a : a + k]
+    for name in ("W", "I", "delta"):
+        if getattr(Li, name) is not None:
+            x[getattr(L, name)] = xi[getattr(Li, name)]
+    if Li.psi is not None:
+        x[L.psi : L.psi + L.npsi] = xi[Li.psi : Li.psi + Li.npsi]
+    # continuation from the ideal gas: ln f = (1 - lam) ln f_ideal + lam ln f_PR, each step from the last
+    for lam in GAS_CONTINUATION:
+        blend = dataclasses.replace(net, phases=[dataclasses.replace(ph, eos=IdealBlend(ph.eos, lam))
+                                                 if ph.kind == "gas_v" and ph.eos is not None else ph
+                                                 for ph in net.phases])
+        xs = _seed_gases(blend, act, x) if lam == GAS_CONTINUATION[0] else x
+        res = _local_solve(build_model(blend, act, "speciation")[0], xs, options)
+        info.stages.append((f"speciation (gas lam={lam:g})", res.status.name, res.iterations))
+        if res.x is not None and _ok(blend, act, res.x):
+            x = np.asarray(res.x, float)
+    info.notes.append("Peng-Robinson fixed-volume gas continued from the ideal-gas speciation")
+    return x
+
+
 def solve_speciation(net, act, options, info, x0=None) -> np.ndarray:
     model, _ = build_model(net, act, "speciation")
+    if x0 is None and any(ph.kind == "gas_v" and ph.eos is not None for ph in net.phases):
+        res = _local_solve(model, _ideal_gas_start(net, act, options, info), options)
+        info.stages.append(("speciation (from the ideal gas)", res.status.name, res.iterations))
+        if res.x is not None and _ok(net, act, res.x):
+            return np.asarray(res.x, float)
+        # no vapor-side state (e.g. CO2 compressed past its liquid-vapor loop): solve from the plain start
+        info.notes.append("Peng-Robinson fixed-volume gas: continuation failed, solving from the plain start")
     start = seed_compositions(net, act, initial_point(net, act) if x0 is None else x0)
     res = _local_solve(model, start, options)
     info.stages.append(("speciation", res.status.name, res.iterations))
@@ -897,6 +962,9 @@ def _gibbs_check(net, act):
     if any(ph.eos is not None for ph in net.phases):
         raise NotImplementedError("method='gibbs' does not support Peng-Robinson gas phases; use 'complementarity', "
                                   "or eos='ideal' for the gas phase")
+    if net.logK_I:
+        raise NotImplementedError("method='gibbs' needs log K independent of the ionic strength; above 1 atm the "
+                                  "molar-volume terms make it depend on I. Use 'complementarity'")
 
 
 def _gibbs_terms(o, net, act, ctx, amounts: dict, W, sc: float = 1.0):
@@ -1052,7 +1120,7 @@ def gibbs_energy(net: Network, x, act: ActivityModel) -> float | None:
     """
     if not act.has_excess or net.surfaces or (net.water is not None and net.water_mass is not None):
         return None
-    if any(ph.eos is not None for ph in net.phases):
+    if any(ph.eos is not None for ph in net.phases) or net.logK_I:
         return None
     v, st = evaluate(net, act, x)
     amounts = {k: max(float(val), 0.0) for k, val in st["n"].items()}

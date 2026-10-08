@@ -447,7 +447,7 @@ section.lead h1 { font-size: 46px; }
 <li>Truesdell-Jones, B-dot, LLNL B-dot</li>
 <li>SIT, Pitzer (E-θ, MacInnes)</li>
 </ul>
-<p><strong>Temperature</strong>: van 't Hoff with ΔH, ΔCp, ΔV, or PHREEQC analytic</p>
+<p><strong>T and P</strong>: van 't Hoff or PHREEQC analytic; above 1 atm, species molar volumes</p>
 </div>
 <div>
 <p><strong>Phases and interfaces</strong></p>
@@ -644,8 +644,7 @@ section.lead h1 { font-size: 46px; }
 <h2 id="honest-about-the-limits">Honest about the limits</h2>
 <ul>
 <li><strong>Log-molality floor</strong> (−200): vanishing redox states can stall</li>
-<li><strong>No pressure term in log K</strong>: matters above ~10 atm (issue #2)</li>
-<li><strong>Gas condensation</strong>: one vapor phase, largest Peng–Robinson root</li>
+<li><strong>Gas condensation</strong>: not a separate phase (PHREEQC caps P in the loop)</li>
 <li><strong>Water gfw</strong>: 18.016 vs 18.01528, a convention</li>
 </ul>
 <div class="takeaway">

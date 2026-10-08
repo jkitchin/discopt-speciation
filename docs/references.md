@@ -81,6 +81,7 @@ For example, a calculation with [`sit.dat`](https://github.com/jkitchin/discopt-
 
 [`phases.py`](https://github.com/jkitchin/discopt-speciation/blob/main/src/discopt/speciation/phases.py), [`species.py`](https://github.com/jkitchin/discopt-speciation/blob/main/src/discopt/speciation/species.py):
 
+- <a id="appelo2014"></a>Appelo, C.A.J., Parkhurst, D.L., and Post, V.E.A. (2014). Equations for calculating hydrogeochemical reactions of minerals and gases such as CO₂ at high pressures and temperatures. *Geochimica et Cosmochimica Acta* 125, 49–67. <https://doi.org/10.1016/j.gca.2013.10.003> (molar volumes and the pressure dependence of log K)
 - <a id="peng1976"></a>Peng, D.-Y., and Robinson, D.B. (1976). A new two-constant equation of state. *Industrial & Engineering Chemistry Fundamentals* 15, 59–64. <https://doi.org/10.1021/i160057a011>
 - <a id="soreide1992"></a>Søreide, I., and Whitson, C.H. (1992). Peng-Robinson predictions for hydrocarbons, CO₂, N₂, and H₂S with pure water and NaCl brine. *Fluid Phase Equilibria* 77, 217–240. <https://doi.org/10.1016/0378-3812(92)85105-H> (PHREEQC's default H₂O(g) binary parameters)
 - <a id="gaines1953"></a>Gaines, G.L., and Thomas, H.C. (1953). Adsorption studies on clay minerals. II. A formulation of the thermodynamics of exchange adsorption. *Journal of Chemical Physics* 21, 714–718. <https://doi.org/10.1063/1.1698996>

@@ -11,6 +11,8 @@ import numpy as np
 from discopt.speciation import solve as _solve
 from discopt.speciation.activity import NUM, ActivityModel, get_activity_model, ionic_strength
 from discopt.speciation.eos import R_LATM, PengRobinson, check_eos, critical_constants, normalize_kij, pure_ln_phi
+from discopt.speciation.volume import reaction_logK
+from discopt.speciation.water import saturation_pressure
 from discopt.speciation.network import build_network, validate_structure
 from discopt.speciation.phases import GasPhase, SolidSolution, SurfaceType
 from discopt.speciation.species import T_REF, Reaction, Species, parse_charge
@@ -98,6 +100,8 @@ class Result:
     fugacity_coefficient: dict = field(default_factory=dict)
     #: per gas phase: present, amount (mol), pressure (atm), volume (L), molar_volume (L/mol), mole_fraction, eos
     gas_phases: dict = field(default_factory=dict)
+    #: pressure (atm) of the solution, used for log K and the water properties
+    pressure: float = 1.0
     #: global stability certificate (:class:`~discopt.speciation.stability.Certificate`), when computed
     certificate: object = None
     #: internal: what produced this state (system, network, activity model, solution vector,
@@ -246,7 +250,9 @@ class System:
 
         ``a0`` (ion size, Angstrom) and ``b`` are Truesdell-Jones parameters
         (PHREEQC ``-gamma a0 b``); other keyword parameters are stored for
-        activity models.
+        activity models. ``Vm=[a1, a2, a3, a4, W, b, i1, i2, i3, i4]`` is the
+        molar volume as PHREEQC's ``-Vm`` (as written in a database), used for the
+        pressure dependence of ``log K`` (:mod:`discopt.speciation.volume`).
         """
         p = dict(params)
         if a0 is not None:
@@ -259,9 +265,12 @@ class System:
         """Water as a species: its activity comes from the activity model and its mass may change."""
         return self._add(Species(name, "solvent"))
 
-    def solid(self, name: str) -> Species:
-        """A solid: a pure phase (unit activity, may be absent) unless placed in a solid solution."""
-        return self._add(Species(name, "solid"))
+    def solid(self, name: str, *, Vm: float | None = None) -> Species:
+        """A solid: a pure phase (unit activity, may be absent) unless placed in a solid solution.
+
+        ``Vm`` is its molar volume (cm3/mol), for the pressure dependence of ``log K``.
+        """
+        return self._add(Species(name, "solid", params={} if Vm is None else {"Vm": float(Vm)}))
 
     def gas(self, name: str, *, Tc: float | None = None, Pc: float | None = None, omega: float | None = None) -> Species:
         """A gas; put it in a :meth:`gas_phase` or fix its log10 partial pressure (atm) in ``equilibrate``.
@@ -448,7 +457,7 @@ class System:
         method: str = "complementarity",
         activity=None,
         T: float | None = None,
-        P: float = 1.0,
+        P: float | None = None,
         water_mass: float | None = None,
         charge_balance=None,
         suppress=None,
@@ -472,7 +481,13 @@ class System:
         activity : str | dict | ActivityModel, optional
             Overrides the system's activity model.
         T, P : float, optional
-            Temperature (K) and pressure (atm).
+            Temperature (K) and pressure (atm). Without ``P`` the pressure is, as in
+            PHREEQC, that of a fixed-pressure gas phase, else that of a fixed-volume
+            gas phase (found with the equilibrium), else the largest fixed partial
+            pressure of a Peng-Robinson gas, else 1 atm. It is never below the
+            vapor pressure of the solution, :math:`p_{sat}(T)\\,a_w`. Above 1 atm,
+            species molar volumes change ``log K``; see :mod:`discopt.speciation.volume`.
+            ``Result.pressure`` reports the value used.
         water_mass : float, optional
             Initial kg of water (default 1). With a solvent species the water mass
             is a variable (water is produced/consumed) unless ``water_mass`` is given.
@@ -497,6 +512,7 @@ class System:
                     charge_balance=charge_balance, suppress=suppress)
         net, act = self._network(amounts, **call)
         x, active, ok, info = _solve.run(net, act, method, options)
+        net, act, x, active, ok = self._settle_pressure(amounts, call, net, act, x, active, ok, info, options)
         cert = None
         if certify or (certify is None and any(ph.model is not None for ph in net.phases)):
             from discopt.speciation.stability import stabilize
@@ -506,11 +522,54 @@ class System:
         res = _make_result(self, net, act, x, active, ok, info, method)
         res.certificate = cert
         res._state = dict(system=self, net=net, act=act, x=np.asarray(x, float), active=set(active),
-                          amounts=dict(amounts), call=dict(call, method=method, options=options))
+                          amounts=dict(amounts), call=dict(call, aw=net.aw, method=method, options=options,
+                                                           # a fixed-volume gas's pressure is held (it is not an input)
+                                                           **({"P": net.P} if "gas volume" in net.pressure_source
+                                                              else {})),
+                          pressure_source=net.pressure_source)
         return res
 
-    def _network(self, amounts: dict, *, fixed=None, pH=None, pe=None, activity=None, T=None, P=1.0,
-                 water_mass=None, charge_balance=None, suppress=None):
+    def _settle_pressure(self, amounts, call, net, act, x, active, ok, info, options, max_iter: int = 50):
+        """Iterate the pressure when it follows the state: a fixed-volume gas, or the saturation pressure ``p_sat a_w``.
+
+        Like PHREEQC, which updates the pressure between iterations. Each round
+        rebuilds the network at the new pressure and repairs the assemblage from
+        the previous state.
+        """
+        T = net.T
+        src = net.pressure_source.split(" (")[0]
+        if src != "gas volume" and saturation_pressure(T) <= net.P_requested:
+            return net, act, x, active, ok
+        opts = dict(_solve.NLP_OPTIONS, **(options or {}))
+        for it in range(max_iter):
+            v, st = _solve.evaluate(net, act, x)
+            aw = 10.0 ** float(st["la"][net.water]) if net.water is not None else 1.0
+            P_src = _gas_volume_pressure(net, st) if src == "gas volume" else net.P_requested
+            P_new = max(P_src, saturation_pressure(T, aw))
+            if abs(P_new - net.P) <= 1e-11 * max(1.0, P_new) and abs(aw - net.aw) <= 1e-11:
+                return net, act, x, active, ok
+            net, act = self._network(amounts, **dict(call, P=P_new, aw=aw), _source=src, _requested=P_src)
+            x, active, ok = _solve.active_set_polish(net, act, active, x, opts, info)
+        info.notes.append(f"pressure did not settle in {max_iter} rounds (P = {net.P:.6g} atm)")
+        return net, act, x, active, False
+
+    def _pressure_source(self, P, fixed_r, phases, T):
+        """``(P, source)``: the requested pressure before the saturation floor; see :meth:`equilibrate`."""
+        if P is not None:
+            return float(P), "given"
+        fixed_p = [ph.pressure for ph in phases if isinstance(ph, GasPhase) and ph.volume is None]
+        if fixed_p:
+            return max(fixed_p), "gas phase"
+        if any(isinstance(ph, GasPhase) and ph.volume is not None for ph in phases):
+            return 1.0, "gas volume"  # a first guess; _settle_pressure finds the gas pressure
+        if self.gas_eos != "ideal":
+            pr = [10.0 ** min(v, 3.5) for sp, v in fixed_r.items() if sp.phase == "gas" and critical_constants(sp)]
+            if pr:
+                return max(pr), "fixed gas"
+        return 1.0, "default"
+
+    def _network(self, amounts: dict, *, fixed=None, pH=None, pe=None, activity=None, T=None, P=None,
+                 water_mass=None, charge_balance=None, suppress=None, aw=None, _source=None, _requested=None):
         """Build the numeric network and activity model for one calculation, without solving."""
         act = self.activity if activity is None else get_activity_model(activity)
         T = self.T if T is None else float(T)
@@ -542,12 +601,21 @@ class System:
                     fixed_r[sp] += logphi[sp]
                 elif sp.phase == "gas" and self.gas_eos == "peng-robinson":
                     raise ValueError(f"gas {sp.name!r} has no critical constants (gas_eos='peng-robinson')")
+        P_req, source = self._pressure_source(P, {s: v - logphi.get(s, 0.0) for s, v in fixed_r.items()}, phases, T)
+        if _source is not None:
+            source, P_req = _source, (P_req if _requested is None else float(_requested))
+        aw = 1.0 if aw is None else float(aw)
+        P_eff = max(P_req, saturation_pressure(T, aw))
+        if P_eff > P_req:
+            source += " (saturation)"
         wm = water_mass
         has_solvent = any(s.phase == "solvent" for s in self.species)
-        net = build_network(self.species, self.reactions, amt, fixed_r, T, P=P, phases=phases,
+        net = build_network(self.species, self.reactions, amt, fixed_r, T, P=P_eff, phases=phases,
                             surfaces=self.surface_types, water_mass=wm if (wm is not None and has_solvent) else None,
-                            charge_balance=cb, suppress=sup, eos=eos)
+                            charge_balance=cb, suppress=sup, eos=eos, aw=aw)
         net.fixed_logphi = {k: logphi[s] for k, s in enumerate(net.species) if s in logphi}
+        net.pressure_source = source
+        net.P_requested = P_req
         if not has_solvent and wm is not None:
             net.W0 = float(wm)
         return net, act
@@ -591,7 +659,7 @@ def _drop_suppressed(phases, sup):
     return out
 
 
-def _suppressed_si(system, solid, log10_a, T, P) -> float:
+def _suppressed_si(system, solid, log10_a, T, P, I=0.0, aw=1.0) -> float:
     """SI of a solid that is not in the network, from the aqueous activities; ``-inf`` if undefined."""
     for r in system.reactions:
         nu = r.stoich
@@ -602,8 +670,21 @@ def _suppressed_si(system, solid, log10_a, T, P) -> float:
         if any(la is None or not math.isfinite(la) for la in las.values()):
             return -math.inf
         iap = sum(c * las[sp] for sp, c in others.items())
-        return (iap - r.logK_at(T, P)) / -nu[solid]
+        return (iap - reaction_logK(r, T, P, I, system.species, aw)) / -nu[solid]
     return -math.inf
+
+
+def _gas_volume_pressure(net, st) -> float:
+    """Largest pressure (atm) of the fixed-volume gas phases at state ``st``."""
+    out = []
+    for p, ph in enumerate(net.phases):
+        if ph.kind != "gas_v":
+            continue
+        if ph.eos is not None:
+            out.append(float(ph.eos.pressure(NUM, [float(a) for a in st["nph"][p]], float(ph.volume), net.T)))
+        else:
+            out.append(math.fsum(10.0 ** float(st["la_eq"][k]) for k in ph.members))
+    return max(out)
 
 
 def _gas_phase_info(net, st, active) -> dict:
@@ -702,7 +783,7 @@ def _make_result(system, net, act, x, active, ok, info, method) -> Result:
     # solution, as in a PHREEQC SOLUTION calculation: SI = (sum_i nu_i log a_i - log K) / -nu_solid.
     for s in system.species:
         if s.phase == "solid" and idx.get(s) is None:
-            SI[s.name] = _suppressed_si(system, s, log10_a, net.T, net.P)
+            SI[s.name] = _suppressed_si(system, s, log10_a, net.T, net.P, I_val, net.aw)
     ss, groups = {}, {}
     for p, ph in enumerate(net.phases):
         if ph.kind == "ss":
@@ -725,6 +806,7 @@ def _make_result(system, net, act, x, active, ok, info, method) -> Result:
         gibbs_energy=_solve.gibbs_energy(net, x, act), residuals=res, fugacity_coefficient=phi, gas_phases=gas_info,
         pruned=[s.name for s in net.pruned], info=info, water_mass=W, pH=pH, pe=pe, gases=gases,
         partial_pressure=pp, exchange=exch, surface=surf, potential=potential, mole_fraction=mf, solid_solutions=ss,
+        pressure=float(net.P),
         charge_balance_adjustment=None if v["delta"] is None else float(v["delta"]),
     )
 

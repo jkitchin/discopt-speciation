@@ -23,7 +23,8 @@ which inert or metastable phases are listed.
 
 - **Temperature and pressure.** $\log K(T,P)$ from van 't Hoff with
   $\Delta H$, $\Delta C_p$ and $\Delta V$, or from PHREEQC analytic
-  expressions. Water properties are temperature dependent.
+  expressions. Above 1 atm, species molar volumes (PHREEQC `-Vm`) give the
+  pressure dependence, and water properties follow T and P.
 - **Activity models.**
   - ideal, Debye–Hückel, Davies
   - extended Debye–Hückel, Truesdell-Jones (PHREEQC), B-dot, LLNL B-dot

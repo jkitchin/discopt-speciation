@@ -40,6 +40,7 @@ import numpy as np
 
 from discopt.speciation import solve as _solve
 from discopt.speciation.activity import JAX, _NumOps, ionic_strength
+from discopt.speciation.water import saturation_pressure
 
 __all__ = ["SensitivityResult", "sensitivities"]
 
@@ -303,6 +304,20 @@ def _stencil(spec: _Spec, ev, f0=None):
     return d2, True
 
 
+def _pressure_quantity(net, src):
+    """``P_src(state)``: the gas pressure of the fixed-volume phase, or ``p_sat(T) a_w`` (as an ops function)."""
+    if "saturation" in src:
+        psat, w = saturation_pressure(net.T), net.water
+        return lambda o, v, st: psat * 10.0 ** st["la"][w]
+    for p, ph in enumerate(net.phases):
+        if ph.kind != "gas_v":
+            continue
+        if ph.eos is not None:
+            return lambda o, v, st, p=p, ph=ph: ph.eos.pressure(o, st["nph"][p], float(ph.volume), net.T)
+        return lambda o, v, st, ph=ph: o.sum([10.0 ** st["la_eq"][k] for k in ph.members])
+    raise ValueError(f"no state-dependent pressure in {src!r}")
+
+
 def _solve_ift(Gx, Gt, L, net, assemblage):
     """``dx/dtheta`` for an assemblage and the scaled condition number of ``F_x`` (``None`` if singular)."""
     n, ne = L.n, L.n - len(L.Nph)
@@ -384,11 +399,16 @@ def sensitivities(result, parameters, quantities, *, rel_step: float = REL_STEP,
     issues: list = []
     if not result.converged:
         issues.append("the equilibrium state did not converge")
+    src = stt.get("pressure_source") or ""
+    # a pressure that follows the state (a fixed-volume gas, or p_sat a_w) is an extra unknown P = P_src(x)
+    pq = None
+    if "gas volume" in src or ("saturation" in src and net.water is not None):
+        pq = _pressure_quantity(net, src)
 
     specs = [_resolve(system, amounts, call, p, net.n_scale, rel_step) for p in params]
     qf_all = [_builtin(q, net, active) for q in quants]
     bidx = [i for i, f in enumerate(qf_all) if f is not None]
-    qfuns = [qf_all[i] for i in bidx]
+    qfuns = [qf_all[i] for i in bidx] + ([pq] if pq else [])
     G0 = _eval_rows(net, act, L, x, qfuns)
     if len(G0) != L.n + len(qfuns):
         raise RuntimeError(f"internal: {len(G0) - len(qfuns)} residuals for {L.n} unknowns")
@@ -408,6 +428,20 @@ def sensitivities(result, parameters, quantities, *, rel_step: float = REL_STEP,
             issues.append(f"parameter {sp.name!r}: {e}")
             lin = False
         linear.append(lin)
+    if pq:
+        # chain rule through P: rows (F and quantities) get d/dP (by rebuilding at fixed x) times dP = q_x dx + q_theta
+        psat = saturation_pressure(net.T, net.aw) if "saturation" in src else 0.0
+        spP = _Spec("P", net.P, rel_step * max(net.P, 1.0), psat,
+                    lambda v, fn: fn(*system._network(amounts, **dict(call, P=float(v)))))
+        fn = lambda nt, ac: _eval_rows(_aligned(net, L, nt, ac), ac, L, x, qfuns)
+        try:
+            GP, _ = _stencil(spP, lambda v: spP.at(v, fn), G0)
+        except (_StructureChanged, ValueError, ArithmeticError) as e:
+            issues.append(f"pressure coupling: {e}")
+            GP = np.full(len(G0), np.nan)
+        GP = np.asarray(GP)[:-1]
+        qx, qt = Gx[-1].copy(), np.nan_to_num(Gt[-1])
+        Gx, Gt = Gx[:-1] + np.outer(GP, qx), Gt[:-1] + np.outer(GP, qt)
 
     def dq(dx, assemblage):
         out = np.full((nq, P), np.nan)

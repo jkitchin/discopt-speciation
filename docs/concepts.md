@@ -48,6 +48,34 @@ for your own.
 **Open systems.** A fixed activity or partial pressure (`fixed={"CO2(g)": -3.5}`,
 `pH=7`, `pe=4`) removes that species from the conservation laws.
 
+## Pressure
+
+Above 1 atm every $\log K$ is corrected with the volume change of its reaction,
+as in PHREEQC ([Appelo, Parkhurst and Post 2014](references.md#appelo2014)):
+
+$$\log K(T, P) = \log K(T) - \frac{\Delta V_r (P - 1\,\mathrm{atm})}{RT\ln 10},
+\qquad \Delta V_r = \sum_i \nu_{ri} V_i(T, P, I).$$
+
+- **Aqueous species** with `-Vm` have a SUPCRT-type volume plus, for ions, a
+  Debye–Hückel term $\tfrac12 z^2 A_v\sqrt I/(1 + bB\sqrt I)$ and a term in $I$.
+  $\log K$ therefore depends on the ionic strength above 1 atm, and is solved
+  with it.
+- **Water** has $18.016/\rho_w(T, P)$; **minerals** their `-Vm`; **gases**
+  none (their non-ideality is in the fugacity coefficient).
+- **Water properties** follow the pressure too: density and compressibility
+  (PHREEQC's fit to Wagner and Pruss 2002), and the dielectric constant, so the
+  Debye–Hückel $A$ and $B$ change. The [Pitzer](references.md#pitzer1973a) model
+  lowers its $b = 1.2$ for ions with $|z| = 1$ and $2$, as PHREEQC does.
+- **llnl.dat** has no molar volumes, so its $\log K$ do not depend on pressure,
+  again as in PHREEQC.
+
+**Which pressure.** `equilibrate(P=...)` sets it. Without `P`, it is the pressure
+of a fixed-pressure gas phase, else of a fixed-volume gas phase (found together
+with the equilibrium), else the largest fixed partial pressure of a
+Peng–Robinson gas, else 1 atm. It is never below the vapor pressure of the
+solution $p_{sat}(T)\,a_w$, which matters above 100 °C. `Result.pressure`
+reports it.
+
 ## Why complementarity
 
 **The wrong formulations.** A common approach treats every candidate solid as
@@ -132,6 +160,7 @@ See `Result.sensitivity` and [fitting](fitting.md#sensitivities).
 | `dH` | J/mol |
 | `dCp` | J/mol/K |
 | `dV` | cm³/mol |
-| `logK` | base 10, at 25 °C, for the reaction as written (products over reactants) |
+| `logK` | base 10, at 25 °C and 1 atm, for the reaction as written (products over reactants) |
+| pressure | atm; `Result.pressure` is the value used |
 | `SI` | $\log_{10}(Q/K)$ per formula unit as written; for a gas, $\log_{10}$ of its fugacity (atm) |
 | `pe` | $-\log_{10} a_{e^-}$; $E_h = pe \cdot RT\ln 10/F$ |

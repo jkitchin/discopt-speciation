@@ -187,8 +187,12 @@ phases can form.
   `r.gas_phases` report the rest. φ matters above ~10 atm (CO2: 0.95 at
   10 atm, 0.74 at 50 atm). Give other gases constants with
   `s.critical_constants(name, Tc=K, Pc=atm, omega=...)`; `gas_eos="ideal"`
-  turns it off. log K has no pressure dependence yet, so results at tens of
-  atm and above are still approximate.
+  turns it off.
+- **Pressure.** Above 1 atm log K follows species molar volumes (`-Vm`), as
+  in PHREEQC. Without `P=`, the pressure is the gas phase's (fixed P, or a
+  fixed volume's computed pressure), else a fixed Peng-Robinson gas's partial
+  pressure, else 1 atm, and never below the water vapor pressure (it matters
+  above 100 C). `r.pressure` reports it. llnl.dat has no molar volumes.
 - **Declare every species.** With `System`, every key in `amounts` must be a
   declared species, including spectators such as `Na+`.
 - **Fixed pH.** Fixing pH makes H+ an open reservoir. Use `charge_balance=`

@@ -7,7 +7,8 @@ this builds everything the solvers need:
   exchange/surface species, log10 activity for virtual species), water, and the
   phases with complementarity;
 * reactions split into mass-action equations and one "phase reaction" per phase
-  member, with ``logK(T, P)``;
+  member, with ``logK(T, P)``; above 1 atm, with species molar volumes, also the
+  ionic-strength terms of ``logK`` (:mod:`discopt.speciation.volume`);
 * the conservation matrix ``A`` (left null space of the stoichiometric matrix,
   computed by exact RREF so the rows stay sparse and element-like) and the
   conserved totals ``b``. Virtual species are columns with zero amount, so
@@ -31,7 +32,8 @@ import numpy as np
 
 from discopt.speciation.phases import GasPhase, SolidSolution
 from discopt.speciation.species import Reaction, Species
-from discopt.speciation.water import M_W
+from discopt.speciation.volume import pressure_factor, reaction_volume, uses_volumes
+from discopt.speciation.water import M_W, water_state
 
 LN10 = math.log(10.0)
 
@@ -43,6 +45,8 @@ class Rxn:
     logK_eff: float  # fixed-activity species moved into the constant
     reaction: Reaction
     member: int | None = None  # phase-member species index for phase reactions
+    #: ionic-strength terms of log K (pressure correction), see :func:`volume.ionic_terms`; empty: constant log K
+    vterms: list = field(default_factory=list)
 
 
 @dataclass
@@ -111,6 +115,18 @@ class Network:
     #: fixed-pressure gases with a Peng-Robinson model: species index -> log10 fugacity coefficient
     #: (``fixed`` then holds the log10 fugacity)
     fixed_logphi: dict = field(default_factory=dict)
+    #: water activity used for the saturation-pressure floor of the water properties
+    aw: float = 1.0
+    #: where the pressure ``P`` came from: "given", "gas phase", "gas volume", "fixed gas", "default";
+    #: with " (saturation)" appended when it was raised to the saturation pressure of water
+    pressure_source: str = "given"
+    #: the pressure before the saturation floor (atm)
+    P_requested: float = 1.0
+
+    @property
+    def logK_I(self) -> bool:
+        """Some log K depends on the ionic strength (molar volumes above 1 atm)."""
+        return any(rx.vterms for rx in list(self.rxns) + list(self.member_rxn.values()))
 
     # -- conveniences ------------------------------------------------------
     @property
@@ -217,14 +233,16 @@ def validate_structure(species: list, reactions: list, fixed=()) -> None:
 
 
 def build_network(species: list, reactions: list, amounts: dict, fixed: dict, T: float, *, P: float = 1.0,
-                  phases=(), surfaces=(), water_mass=None, charge_balance=None, suppress=(), eos=None) -> Network:
+                  phases=(), surfaces=(), water_mass=None, charge_balance=None, suppress=(), eos=None,
+                  aw: float = 1.0) -> Network:
     """Assemble arrays, pruning species forced to zero by conservation.
 
     ``amounts`` and ``fixed`` are keyed by :class:`Species`; ``phases`` holds
     :class:`SolidSolution`/:class:`GasPhase` with Species members; ``surfaces``
     holds :class:`SurfaceType`; ``suppress`` lists species to remove (e.g.
     metastable phases); ``eos`` maps ``id(gas phase)`` to its Peng-Robinson
-    model (absent: ideal).
+    model (absent: ideal). ``aw`` is the water activity for the saturation-pressure
+    floor of the water properties (PHREEQC's ``p_sat`` times ``a_w``).
     """
     suppress = set(suppress)
     species = [s for s in species if s not in suppress]
@@ -259,10 +277,11 @@ def build_network(species: list, reactions: list, amounts: dict, fixed: dict, T:
     rxns = list(reactions)
     pruned: list = []
     while True:
-        net = _assemble(keep, rxns, amounts, fixed, T, P, container, surfaces, water_mass, charge_balance, eos or {})
+        net = _assemble(keep, rxns, amounts, fixed, T, P, container, surfaces, water_mass, charge_balance, eos or {}, aw)
         absent = _forced_zero(net)
         if not absent:
             net.pruned = pruned
+            net.aw = float(aw)
             return net
         pruned.extend(absent)
         gone = set(absent)
@@ -288,7 +307,7 @@ def _kind(s: Species, fixed) -> str:
     return {"exchange": "ex", "surface": "surf", "solid": "member", "gas": "member"}.get(s.phase, "virt")
 
 
-def _assemble(keep, rxns, amounts, fixed, T, P, container, surfaces, water_mass, cb, eos) -> Network:
+def _assemble(keep, rxns, amounts, fixed, T, P, container, surfaces, water_mass, cb, eos, aw=1.0) -> Network:
     kinds = {s: _kind(s, fixed) for s in keep}
     order_kind = {"aq": 0, "ex": 1, "surf": 2, "virt": 3}
     yspecies = sorted((s for s in keep if kinds[s] in order_kind), key=lambda s: order_kind[kinds[s]])
@@ -314,8 +333,15 @@ def _assemble(keep, rxns, amounts, fixed, T, P, container, surfaces, water_mass,
 
     N = np.zeros((len(cols), len(rxns)))
     out_rxns, member_rxn = [], {}
+    cP = pressure_factor(T, P) if uses_volumes(keep) else 0.0
+    ws = water_state(T, P, aw) if cP else None
     for j, r in enumerate(rxns):
         lk = r.logK_at(T, P)
+        vterms = []
+        if cP:
+            dv0, terms = reaction_volume(r.stoich, ws)
+            lk -= cP * dv0
+            vterms = [(kind, -cP * c, p) for kind, c, p in terms if c]
         nu = {idx[s]: c for s, c in r.stoich.items()}
         eff = lk - sum(c * fixed_i[k] for k, c in nu.items() if k in fixed_i)
         for k, c in nu.items():
@@ -324,7 +350,7 @@ def _assemble(keep, rxns, amounts, fixed, T, P, container, surfaces, water_mass,
         if not np.any(N[:, j]):
             raise ValueError(f"reaction {r.equation()!r} involves only fixed-activity species")
         mem = [k for k in nu if kind[k] == "member"]
-        rx = Rxn(nu, lk, eff, r, mem[0] if mem else None)
+        rx = Rxn(nu, lk, eff, r, mem[0] if mem else None, vterms)
         if mem:
             member_rxn[mem[0]] = rx
         else:

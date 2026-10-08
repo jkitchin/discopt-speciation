@@ -4,10 +4,11 @@ Supported keyword blocks: ``SOLUTION_MASTER_SPECIES``, ``SOLUTION_SPECIES``,
 ``PHASES``, ``EXCHANGE_MASTER_SPECIES``, ``EXCHANGE_SPECIES``,
 ``SURFACE_MASTER_SPECIES``, ``SURFACE_SPECIES`` and ``PITZER``; other blocks
 (``RATES``, ``MEAN_GAMMAS``, ...) are skipped. Per reaction the parser reads
-``log_k``, ``delta_h`` (with units), ``-analytic`` and ``-gamma``, and per gas
-the Peng-Robinson critical constants ``-T_c``, ``-P_c`` and ``-Omega``, with
-``GAS_BINARY_PARAMETERS``. Molar volumes and diffusion coefficients are ignored
-(so pressure corrections of ``log K`` are not modelled).
+``log_k``, ``delta_h`` (with units), ``-analytic``, ``-gamma``, the molar
+volumes ``-Vm`` of species and phases (for the pressure dependence of
+``log K``, see :mod:`discopt.speciation.volume`), and per gas the Peng-Robinson
+critical constants ``-T_c``, ``-P_c`` and ``-Omega``, with
+``GAS_BINARY_PARAMETERS``. Diffusion coefficients are ignored.
 
 Example::
 
@@ -265,6 +266,11 @@ class PhreeqcDatabase:
                     n = list(ne.analytic or ()) + [0.0] * 6
                     ent.analytic = tuple(x + coef * y for x, y in zip(a[:6], n[:6]))
 
+    @property
+    def _uses_vm(self) -> bool:
+        # PHREEQC skips molar volumes for databases with LLNL_AQUEOUS_MODEL_PARAMETERS (calc_vm)
+        return not self.llnl
+
     # ------------------------------------------------------------------ building systems
     def default_activity(self):
         """The database's own aqueous model: Pitzer, LLNL B-dot, SIT, or Truesdell-Jones."""
@@ -385,6 +391,8 @@ class PhreeqcDatabase:
             else:
                 ent = self.species.get(nm)
                 flag = {"gamma": ent.options["gamma"]} if ent and "gamma" in ent.options else {}
+                if ent and self._uses_vm and _vm_numbers(ent):
+                    flag["Vm"] = _vm_numbers(ent)
                 s.aqueous(nm, parse_charge(nm), a0=ent.a0 if ent else None, b=ent.b if ent else None, **flag)
         if uses_e:
             s.electron("e-")
@@ -461,7 +469,9 @@ class PhreeqcDatabase:
                 if tc and pc and tc > 0 and pc > 0:
                     s.critical_constants(sp, tc, pc, ent.options.get("omega") or 0.0)
             else:
-                s.solid(ph)
+                sp = s.solid(ph)
+                if self._uses_vm and _vm_numbers(ent):
+                    sp.params["Vm"] = _phase_vm(ent)
             _add_reaction(s, ent)
         if gas_phase:
             gp = dict(gas_phase)
@@ -513,6 +523,22 @@ def _option(ent: Entry, part: str) -> None:
         ent.options[key] = nums[0] if nums else None
     else:
         ent.options[key] = vals
+
+
+def _vm_numbers(ent: Entry) -> list:
+    vals = ent.options.get("vm") or []
+    return [float(v) for v in vals if _is_num(v)]
+
+
+_VM_UNITS = {"cm3": 1.0, "dm3": 1e3, "m3": 1e6}
+
+
+def _phase_vm(ent: Entry) -> float:
+    """A phase's ``-Vm`` in cm3/mol (PHREEQC ``read_phase_vm``: first number, optional unit)."""
+    vals = ent.options.get("vm") or []
+    unit = next((v.lower() for v in vals if not _is_num(v)), "cm3")
+    factor = next((f for u, f in _VM_UNITS.items() if u in unit), 1.0)
+    return _vm_numbers(ent)[0] * factor
 
 
 def _add_reaction(system, ent: Entry) -> None:
