@@ -133,7 +133,7 @@ For example, a calculation with [`sit.dat`](https://github.com/jkitchin/discopt-
 
 ## Validation cases and examples
 
-- <a id="laliwala2025"></a>Laliwala, C.A., Amusat, O.O., and Torres, A.I. (2025). An optimization-based law of mass action precipitation/dissolution model. *Systems and Control Transactions* 4, 2140–2145 (Proceedings of ESCAPE 35). <https://doi.org/10.69997/sct.132742>
+- <a id="laliwala2025"></a>Laliwala, C.A., et al. (2025). An optimization-based law of mass action precipitation/dissolution model. *Systems and Control Transactions* 4, 2140–2145 (Proceedings of ESCAPE 35). <https://doi.org/10.69997/sct.132742>
   — the three validation cases in notebook 02, [`tests/test_minteq.py`](https://github.com/jkitchin/discopt-speciation/blob/main/tests/test_minteq.py) and [`tests/test_counterexamples.py`](https://github.com/jkitchin/discopt-speciation/blob/main/tests/test_counterexamples.py).
 - <a id="parkhurst2013-examples"></a>Parkhurst, D.L., and Appelo, C.A.J. (2013), chapter "Examples" of *Description of input and examples for PHREEQC version 3* (USGS Techniques and Methods 6-A43, <https://doi.org/10.3133/tm6A43>); input files distributed with PHREEQC 3 (<https://github.com/usgs-coupled/phreeqc3/tree/master/examples>)
   — examples 1–8, 10, 11, 14, 17 (forward part) and 19 in [`tests/test_phreeqc_examples.py`](https://github.com/jkitchin/discopt-speciation/blob/main/tests/test_phreeqc_examples.py) ([Validation](validation.md#phreeqc-example-problems)).

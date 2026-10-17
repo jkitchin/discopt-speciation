@@ -60,10 +60,20 @@ which inert or metastable phases are listed.
 
 ## Install
 
+From GitHub:
+
 ```bash
-pip install -e .            # requires discopt
-pip install -e ".[plot]"    # matplotlib, for diagrams
+pip install "discopt-speciation @ git+https://github.com/jkitchin/discopt-speciation"
+pip install "discopt-speciation[plot] @ git+https://github.com/jkitchin/discopt-speciation"  # matplotlib, for diagrams
 ```
+
+From a clone, for development:
+
+```bash
+pip install -e ".[plot]"    # installs discopt from PyPI
+```
+
+Python 3.10 or later is required.
 
 ## Quick start
 
@@ -160,7 +170,7 @@ Notebooks in [examples/](examples/):
 | notebook | topic |
 |----------|-------|
 | 01 | getting started |
-| 02 | the Torres mass-action examples, with evidence of correctness |
+| 02 | the Laliwala et al. (2025) mass-action examples, with evidence of correctness |
 | 03 | databases and your own data |
 | 04 | fitting with confidence intervals |
 | 05 | diagrams |
@@ -171,7 +181,8 @@ Rebuild the notebooks with `python examples/build_notebooks.py [03 04 ...]`.
 ## Tests
 
 ```bash
-python -m pytest -m "not slow"
+python -m pytest -m "not slow"   # fast suite
+python -m pytest                 # everything, including slow solves
 ```
 
 ## Data attribution
@@ -195,6 +206,11 @@ ThermoChimie data are subject to the ThermoChimie terms of use,
 
 **References.** [docs/references.md](docs/references.md) lists every database,
 model, method and paper the package uses, with DOIs and links. The validation
-cases come from Laliwala, Amusat and Torres (2025), *Systems and Control
+cases come from Laliwala et al. (2025), *Systems and Control
 Transactions* 4, 2140–2145, <https://doi.org/10.69997/sct.132742>. The solver is
 [discopt](https://github.com/jkitchin/discopt).
+
+## License
+
+MIT; see [LICENSE](LICENSE). The bundled databases keep their own terms
+(see [Data attribution](#data-attribution)).

@@ -40,7 +40,7 @@ GETTING_STARTED = [
 - **conservation** of every quantity the reactions cannot change, such as element totals. These are computed from the network, not typed in.
 - **complementarity** for every candidate solid $k$: $n_k \\ge 0$, $\\mathrm{SI}_k \\le 0$, and $n_k\\,\\mathrm{SI}_k = 0$. The saturation index is $\\mathrm{SI}_k=\\log_{10}(Q_k/K_k)$, where $Q_k$ is the activity product. A solid is either present and saturated ($\\mathrm{SI}=0$), or absent and undersaturated ($\\mathrm{SI}<0$).
 
-The third condition is the one that is easy to get wrong. Without it, the answer depends on how reactions are written and on which phases are listed as candidates. This is the problem with the SI²-minimization approach of Laliwala, Amusat and Torres (2025, [doi:10.69997/sct.132742](https://doi.org/10.69997/sct.132742)). [`02-validation.ipynb`](https://github.com/jkitchin/discopt-speciation/blob/main/examples/02-validation.ipynb) re-solves their cases.
+The third condition is the one that is easy to get wrong. Without it, the answer depends on how reactions are written and on which phases are listed as candidates. This is the problem with the SI²-minimization approach of Laliwala et al. (2025, [doi:10.69997/sct.132742](https://doi.org/10.69997/sct.132742)). [`02-validation.ipynb`](https://github.com/jkitchin/discopt-speciation/blob/main/examples/02-validation.ipynb) re-solves their cases.
 
 **The notebooks.**
 
@@ -285,7 +285,7 @@ print(yaml.safe_dump(s.to_spec(), sort_keys=False))
 - Fischer, A. (1992). A special Newton-type optimization method. *Optimization* 24, 269–284. <https://doi.org/10.1080/02331939208843795>
 - Kanzow, C. (1996). Some noninterior continuation methods for linear complementarity problems. *SIAM Journal on Matrix Analysis and Applications* 17, 851–868. <https://doi.org/10.1137/S0895479894273134>
 - Kitchin, J. *discopt*. <https://github.com/jkitchin/discopt>
-- Laliwala, C.A., Amusat, O.O., and Torres, A.I. (2025). An optimization-based law of mass action precipitation/dissolution model. *Systems and Control Transactions* 4, 2140–2145. <https://doi.org/10.69997/sct.132742>
+- Laliwala, C.A., et al. (2025). An optimization-based law of mass action precipitation/dissolution model. *Systems and Control Transactions* 4, 2140–2145. <https://doi.org/10.69997/sct.132742>
 - Leal, A.M.M., Kulik, D.A., Smith, W.R., and Saar, M.O. (2017). An overview of computational methods for chemical equilibrium and kinetic calculations for geochemical and reactive transport modeling. *Pure and Applied Chemistry* 89, 597–643. <https://doi.org/10.1515/pac-2016-1107>
 - Parkhurst, D.L., and Appelo, C.A.J. (2013). *Description of input and examples for PHREEQC version 3.* USGS Techniques and Methods 6-A43. <https://doi.org/10.3133/tm6A43>
 - Smith, W.R., and Missen, R.W. (1982). *Chemical Reaction Equilibrium Analysis: Theory and Algorithms.* Wiley, New York.
@@ -297,13 +297,13 @@ The full bibliography is in [`docs/references.md`](https://github.com/jkitchin/d
 # ============================================================================ 02
 VALIDATION = [
 """md:
-# Validation: the Laliwala, Amusat & Torres (2025) examples, and how we know the answers are right
+# Validation: the Laliwala et al. (2025) examples, and how we know the answers are right
 
 **What you will learn.** How to rebuild published equilibrium problems from database data, and how to check any `discopt.speciation` result yourself instead of trusting the solver. The checks are: independent residuals, a PHREEQC comparison, alternative algorithms, invariance tests and a Gibbs-energy test.
 
 **Before you start.** Read [`01-getting-started.ipynb`](https://github.com/jkitchin/discopt-speciation/blob/main/examples/01-getting-started.ipynb) first. It introduces activities, the saturation index $\\mathrm{SI}_k=\\log_{10}(Q_k/K_k)$, the Davies equation and complementarity (a candidate solid is either present with $\\mathrm{SI}_k=0$, or absent with $\\mathrm{SI}_k\\le 0$). The equations are summarized in [`docs/concepts.md`](https://github.com/jkitchin/discopt-speciation/blob/main/docs/concepts.md). Amounts are in mol per kg of water (mol/kgw), and $I=\\tfrac12\\sum_i z_i^2 m_i$ is the ionic strength. Running the notebook takes about a minute, mostly for the exhaustive enumeration of Case 3. Log lines starting with `INFO pounce...` come from the underlying NLP solver and can be ignored.
 
-Laliwala, Amusat & Torres (2025, [doi:10.69997/sct.132742](https://doi.org/10.69997/sct.132742)) compute aqueous equilibrium with precipitation by minimizing $z=\\sum_k \\mathrm{SI}_k^2$ over reaction extents. They validate the method on three cases against PHREEQC (Parkhurst & Appelo 2013, [doi:10.3133/tm6A43](https://doi.org/10.3133/tm6A43)). That objective leaves out complementarity: an absent solid does not need $\\mathrm{SI}=0$, only $\\mathrm{SI}\\le 0$. So minimizing $z$ can return states that are not at equilibrium. Its answers can also change when a reaction is rescaled or an inert candidate phase is added. A separate analysis, which is not part of this repository, built small counterexamples for these failures. We re-solve them below (E4).
+Laliwala et al. (2025, [doi:10.69997/sct.132742](https://doi.org/10.69997/sct.132742)) compute aqueous equilibrium with precipitation by minimizing $z=\\sum_k \\mathrm{SI}_k^2$ over reaction extents. They validate the method on three cases against PHREEQC (Parkhurst & Appelo 2013, [doi:10.3133/tm6A43](https://doi.org/10.3133/tm6A43)). That objective leaves out complementarity: an absent solid does not need $\\mathrm{SI}=0$, only $\\mathrm{SI}\\le 0$. So minimizing $z$ can return states that are not at equilibrium. Its answers can also change when a reaction is rescaled or an inert candidate phase is added. A separate analysis, which is not part of this repository, built small counterexamples for these failures. We re-solve them below (E4).
 
 The notebook collects five independent kinds of evidence that the results are correct equilibria:
 
@@ -807,7 +807,7 @@ For every example in the paper and every counterexample:
 """md:
 ## References
 
-- Laliwala, C.A., Amusat, O.O., and Torres, A.I. (2025). An optimization-based law of mass action precipitation/dissolution model. *Systems and Control Transactions* 4, 2140–2145. [doi:10.69997/sct.132742](https://doi.org/10.69997/sct.132742)
+- Laliwala, C.A., et al. (2025). An optimization-based law of mass action precipitation/dissolution model. *Systems and Control Transactions* 4, 2140–2145. [doi:10.69997/sct.132742](https://doi.org/10.69997/sct.132742)
 - Parkhurst, D.L., and Appelo, C.A.J. (2013). Description of input and examples for PHREEQC version 3. USGS Techniques and Methods 6-A43. [doi:10.3133/tm6A43](https://doi.org/10.3133/tm6A43)
 - Allison, J.D., Brown, D.S., and Novo-Gradac, K.J. (1991). MINTEQA2/PRODEFA2 version 3.0 user's manual. EPA/600/3-91/021. [OSTI 5673069](https://www.osti.gov/biblio/5673069)
 - Davies, C.W. (1938). The extent of dissociation of salts in water. Part VIII. *J. Chem. Soc.*, 2093. [doi:10.1039/JR9380002093](https://doi.org/10.1039/JR9380002093)

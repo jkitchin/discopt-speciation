@@ -22,7 +22,7 @@ checked by [`tests/test_phreeqc.py`](https://github.com/jkitchin/discopt-speciat
 | same, 100–500 atm | pitzer.dat | pH, log a, a_w | pH ≤ 2.4e-5, log a ≤ 7.5e-5, log a_w 5e-5 |
 | same, 200 atm | sit.dat / llnl.dat (llnl.dat has no molar volumes: pressure independent in both programs) | pH, log a | pH 5e-9 / 1.3e-7 |
 | [MINTEQ](references.md#allison1991) benchmark systems | ideal/Davies | full speciation | see [`test_minteq.py`](https://github.com/jkitchin/discopt-speciation/blob/main/tests/test_minteq.py) |
-| [Torres](references.md#laliwala2025) mass-action examples | ideal | solids, SI, invariance | see notebook 02 |
+| [Laliwala et al. (2025)](references.md#laliwala2025) mass-action examples | ideal | solids, SI, invariance | see notebook 02 |
 
 **Remaining differences.**
 - **Gas cases:** the Peng–Robinson equation of state uses PHREEQC's gas constant,

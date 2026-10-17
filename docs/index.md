@@ -30,7 +30,7 @@ Example notebooks are in [`examples/`](https://github.com/jkitchin/discopt-speci
 | notebook | topic |
 |----------|-------|
 | [`01-getting-started.ipynb`](examples/01-getting-started.ipynb) | declaring a system, the equilibrium conditions, the DSL and YAML forms |
-| [`02-validation.ipynb`](examples/02-validation.ipynb) | the Laliwala, Amusat and Torres (2025) cases, with five independent kinds of evidence of correctness |
+| [`02-validation.ipynb`](examples/02-validation.ipynb) | the Laliwala et al. (2025) cases, with five independent kinds of evidence of correctness |
 | [`03-databases-and-your-own-data.ipynb`](examples/03-databases-and-your-own-data.ipynb) | PHREEQC databases, adding and overriding data, custom databases |
 | [`04-fitting-thermodynamic-data.ipynb`](examples/04-fitting-thermodynamic-data.ipynb) | fitting constants to solubility and pH data, profile likelihood |
 | [`05-diagrams.ipynb`](examples/05-diagrams.ipynb) | speciation, Pourbaix and Ellingham diagrams |
