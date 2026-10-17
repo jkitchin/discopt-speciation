@@ -160,7 +160,7 @@ Notebooks in [examples/](examples/):
 | notebook | topic |
 |----------|-------|
 | 01 | getting started |
-| 02 | the Torres mass-action examples, with evidence of correctness |
+| 02 | the Laliwala et al. (2025) mass-action examples, with evidence of correctness |
 | 03 | databases and your own data |
 | 04 | fitting with confidence intervals |
 | 05 | diagrams |
@@ -195,6 +195,6 @@ ThermoChimie data are subject to the ThermoChimie terms of use,
 
 **References.** [docs/references.md](docs/references.md) lists every database,
 model, method and paper the package uses, with DOIs and links. The validation
-cases come from Laliwala, Amusat and Torres (2025), *Systems and Control
+cases come from Laliwala et al. (2025), *Systems and Control
 Transactions* 4, 2140–2145, <https://doi.org/10.69997/sct.132742>. The solver is
 [discopt](https://github.com/jkitchin/discopt).

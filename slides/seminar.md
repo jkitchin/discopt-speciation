@@ -99,7 +99,7 @@ Complementarity = the KKT conditions of Gibbs energy minimization. The answer ca
 
 ## Invariance, demonstrated
 
-Counterexamples from Laliwala, Amusat and Torres (2025):
+Counterexamples from Laliwala et al. (2025):
 
 | case | change | $\sum\mathrm{SI}^2$ objective | discopt-speciation |
 |---|---|---|---|
@@ -133,7 +133,7 @@ Relative change in the aqueous state across CE2/3/4: **exactly 0**.
 
 <div class="takeaway">
 
-On the Torres cases all three agree: molalities to 2e-10, solids to 3e-11 relative.
+On the Laliwala et al. cases all three agree: molalities to 2e-10, solids to 3e-11 relative.
 
 </div>
 
@@ -400,7 +400,7 @@ kitchingroup.cheme.cmu.edu/discopt-speciation
 <div class="small">
 
 Parkhurst & Appelo (2013) PHREEQC 3, doi:10.3133/tm6A43
-Laliwala, Amusat & Torres (2025) Syst. Control Trans. 4, 2140, doi:10.69997/sct.132742
+Laliwala et al. (2025) Syst. Control Trans. 4, 2140, doi:10.69997/sct.132742
 Michelsen (1982) Fluid Phase Equilib. 9, 1, doi:10.1016/0378-3812(82)85001-2
 
 </div>
