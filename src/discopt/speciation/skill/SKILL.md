@@ -31,7 +31,7 @@ If no question is given, ask the user for:
 ## Setup
 
 ```bash
-python -c "import discopt.speciation"      # else: pip install discopt-speciation  (add [plot] for figures)
+python -c "import discopt.speciation"      # else: pip install "discopt-speciation[plot] @ git+https://github.com/jkitchin/discopt-speciation"
 ```
 
 Set `JAX_PLATFORMS=cpu` if JAX prints GPU warnings. Log lines starting with

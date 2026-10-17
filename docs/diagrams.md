@@ -2,7 +2,7 @@
 
 `discopt.speciation.plot` builds diagrams from full equilibrium calculations, so
 aqueous speciation, solid fields and gas phases are mutually consistent. It
-needs matplotlib (`pip install discopt-speciation[plot]`).
+needs matplotlib (`pip install "discopt-speciation[plot] @ git+https://github.com/jkitchin/discopt-speciation"`).
 
 Every figure on this page was made by
 [`docs/figures/make_figures.py`](https://github.com/jkitchin/discopt-speciation/blob/main/docs/figures/make_figures.py)

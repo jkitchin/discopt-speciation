@@ -7,7 +7,7 @@ prerequisite for all the others.
 
 Each notebook is shown here with its stored outputs. To run one yourself,
 download it from GitHub and install the package with the `plot` extra
-(`pip install discopt-speciation[plot]`).
+(`pip install "discopt-speciation[plot] @ git+https://github.com/jkitchin/discopt-speciation"`).
 
 | # | notebook | what you will learn | source |
 |---|----------|---------------------|--------|
