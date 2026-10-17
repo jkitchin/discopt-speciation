@@ -20,7 +20,7 @@ closest example and edits it instead of writing a script from memory.
 ## Install
 
 ```bash
-pip install discopt-speciation
+pip install "discopt-speciation @ git+https://github.com/jkitchin/discopt-speciation"
 discopt-speciation-install-skill            # for your user: ~/.claude
 discopt-speciation-install-skill --project  # for one repository: ./.claude (commit it)
 discopt-speciation-install-skill --force    # overwrite after upgrading the package
