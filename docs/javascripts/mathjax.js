@@ -1,13 +1,16 @@
 window.MathJax = {
   tex: {
-    inlineMath: [["\\(", "\\)"]],
-    displayMath: [["\\[", "\\]"]],
+    // \( \[ from arithmatex (Markdown pages); $ $$ from notebook markdown cells
+    inlineMath: [["\\(", "\\)"], ["$", "$"]],
+    displayMath: [["\\[", "\\]"], ["$$", "$$"]],
     processEscapes: true,
     processEnvironments: true
   },
   options: {
-    ignoreHtmlClass: ".*|",
-    processHtmlClass: "arithmatex"
+    // ignore elements with a class; unclassed children (the <p> in a notebook
+    // cell) inherit "process" from a processHtmlClass ancestor
+    ignoreHtmlClass: ".+",
+    processHtmlClass: "arithmatex|jp-RenderedMarkdown"
   }
 };
 
