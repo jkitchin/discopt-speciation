@@ -6,6 +6,7 @@
 [![docs](https://github.com/jkitchin/discopt-speciation/actions/workflows/docs.yml/badge.svg)](https://github.com/jkitchin/discopt-speciation/actions/workflows/docs.yml)
 [![documentation](https://img.shields.io/badge/documentation-online-blue)](https://kitchingroup.cheme.cmu.edu/discopt-speciation/)
 [![web app](https://img.shields.io/badge/web%20app-try%20in%20browser-orange)](https://kitchingroup.cheme.cmu.edu/discopt-speciation/app/)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23539984.svg)](https://doi.org/10.5281/zenodo.23539984)
 
 Chemical equilibrium for aqueous systems with solids, gases, solid solutions,
 ion exchangers and sorbing surfaces, as a discopt plugin (`import discopt.speciation`).
